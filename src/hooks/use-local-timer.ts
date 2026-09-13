@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { formatTime } from '@/lib/utils'
 
 interface TimerState {
   mode: 'countdown' | 'stopwatch'
@@ -81,6 +82,17 @@ export function useLocalTimer(state: TimerState): TimerOutput {
     document.addEventListener('visibilitychange', handleVisibility)
     return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [state.status, calculate])
+
+  // Update document title with timer value
+  useEffect(() => {
+    if (state.status === 'running' || state.status === 'paused') {
+      const modeIndicator = state.mode === 'countdown' ? '⏳' : '⏱️'
+      const statusIndicator = state.status === 'paused' ? '⏸️ ' : ''
+      document.title = `${statusIndicator}${formatTime(displaySeconds)} ${modeIndicator} Re-Focus`
+    } else {
+      document.title = 'Re-Focus — Shared Study Timer'
+    }
+  }, [displaySeconds, state.status, state.mode])
 
   const isComplete = state.mode === 'countdown' && displaySeconds <= 0 && state.status === 'running'
   const progress = state.mode === 'countdown' && state.duration > 0

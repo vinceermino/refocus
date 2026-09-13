@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Timer, Users, Zap, ArrowRight } from 'lucide-react'
+import { Heart, Coffee, Sparkles, ArrowRight, BookOpen } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -12,78 +12,62 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-gradient-to-b from-background to-accent-primary-soft/30">
       {/* Nav */}
-      <nav className="border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Timer className="h-5 w-5 text-accent-primary" />
-            <span className="font-bold text-lg">Re-Focus</span>
+      <nav className="border-b border-border/50 bg-background/50 backdrop-blur-md relative z-10">
+        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-accent-primary">
+            <Heart className="h-5 w-5 fill-accent-primary" />
+            <span className="font-bold text-lg tracking-tight">Re-Focus</span>
           </div>
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm font-medium text-muted-foreground hover:text-accent-primary transition-colors px-3 py-2"
             >
-              Sign In
-            </Link>
-            <Link
-              href="/signup"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent-primary text-white text-sm font-medium hover:bg-accent-primary/90 transition-colors"
-            >
-              Get Started
-              <ArrowRight className="h-4 w-4" />
+              Log in
             </Link>
           </div>
         </div>
       </nav>
 
       {/* Hero */}
-      <main className="flex-1 flex items-center justify-center px-4">
-        <div className="max-w-3xl mx-auto text-center space-y-8 animate-slide-up">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-primary/10 text-accent-primary text-sm font-medium">
-            <Zap className="h-4 w-4" />
-            Real-time study sessions
-          </div>
+      <main className="flex-1 flex items-center justify-center px-4 relative z-10">
+        <div className="max-w-2xl mx-auto w-full animate-slide-up">
 
-          <h1 className="text-5xl sm:text-6xl font-bold tracking-tight leading-tight">
-            Study Together,
-            <br />
-            <span className="text-accent-primary">Stay Focused</span>
-          </h1>
+          <div className="bg-card/80 backdrop-blur-xl border border-border shadow-2xl shadow-accent-glow rounded-3xl p-8 sm:p-12 text-center space-y-8 relative overflow-hidden">
 
-          <p className="text-xl text-muted-foreground max-w-xl mx-auto">
-            Join shared study rooms with synchronized timers. See who&apos;s online, track your progress, and stay accountable with friends.
-          </p>
-
-          <div className="flex items-center justify-center gap-4">
-            <Link
-              href="/signup"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-accent-primary text-white font-medium hover:bg-accent-primary/90 transition-colors shadow-lg shadow-accent-glow"
-            >
-              Start Studying
-              <ArrowRight className="h-5 w-5" />
-            </Link>
-          </div>
-
-          {/* Feature cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-8">
-            <div className="p-6 rounded-xl border border-border bg-card">
-              <Timer className="h-8 w-8 text-accent-primary mb-3" />
-              <h3 className="font-semibold mb-1">Synced Timers</h3>
-              <p className="text-sm text-muted-foreground">Countdown or stopwatch mode, perfectly synced across all participants.</p>
+            {/* Cute top badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-primary-soft text-accent-primary text-sm font-medium border border-accent-primary/20">
+              <Sparkles className="h-4 w-4" />
+              <span>Our private study space</span>
             </div>
-            <div className="p-6 rounded-xl border border-border bg-card">
-              <Users className="h-8 w-8 text-accent-primary mb-3" />
-              <h3 className="font-semibold mb-1">Study Rooms</h3>
-              <p className="text-sm text-muted-foreground">Create rooms and invite friends with a simple 6-character code.</p>
+
+            <div className="space-y-4">
+              <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
+                Welcome to our <br className="hidden sm:block" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-primary to-pink-500">
+                  Study Space
+                </span>
+              </h1>
+
+
             </div>
-            <div className="p-6 rounded-xl border border-border bg-card">
-              <Zap className="h-8 w-8 text-accent-primary mb-3" />
-              <h3 className="font-semibold mb-1">Real-time</h3>
-              <p className="text-sm text-muted-foreground">See who's online and track everyone's focus in real-time.</p>
+
+
+            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href="/signup"
+                className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-accent-primary text-white font-medium hover:bg-accent-primary/90 transition-all shadow-lg shadow-accent-glow hover:scale-105 active:scale-95"
+              >
+                Enter Our Room
+                <Heart className="h-5 w-5 group-hover:fill-white transition-all" />
+              </Link>
             </div>
           </div>
+
+
+
         </div>
       </main>
     </div>
