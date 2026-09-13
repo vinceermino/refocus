@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Kristi } from "next/font/google";
 import { Toaster } from "sonner";
 import { Heart, Sparkles } from "lucide-react";
 import { Providers } from "@/components/providers/providers";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const kristi = Kristi({
+  weight: "400",
+  variable: "--font-kristi",
   subsets: ["latin"],
 });
 
@@ -27,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${kristi.variable} antialiased`}
       >
         <Providers>
           {/* Global decorative background elements */}

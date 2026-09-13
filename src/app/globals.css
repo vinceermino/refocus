@@ -101,7 +101,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-kristi), cursive, system-ui, sans-serif;
   min-height: 100vh;
 }
 
