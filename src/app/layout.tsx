@@ -16,9 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Re-Focus — Shared Study Timer",
-  description:
-    "Study together in real-time. Join a room, start a timer, and stay focused with friends.",
+  title: "ReFocus",
 };
 
 export default function RootLayout({
@@ -41,11 +39,11 @@ export default function RootLayout({
               <Sparkles size={80} className="-rotate-12" />
             </div>
           </div>
-          
+
           <div className="relative z-10">
             {children}
           </div>
-          
+
           <Toaster
             position="bottom-right"
             toastOptions={{
