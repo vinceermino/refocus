@@ -16,10 +16,7 @@ export default async function DashboardPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            Welcome back{profile?.username ? `, ${profile.username}` : ''}!
-          </p>
+          <h1 className="text-3xl font-bold">Hello {profile?.username}!</h1>
         </div>
         <DashboardActions />
       </div>

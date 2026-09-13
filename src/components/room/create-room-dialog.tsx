@@ -42,13 +42,12 @@ export function CreateRoomDialog({ open, onOpenChange }: CreateRoomDialogProps) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent onClose={() => onOpenChange(false)}>
         <DialogHeader>
-          <DialogTitle>Create Study Room</DialogTitle>
-          <DialogDescription>Create a new room and invite friends to study together.</DialogDescription>
+          <DialogTitle>Create a Room</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="name" className="text-sm font-medium mb-1.5 block">Room Name</label>
-            <Input id="name" name="name" placeholder="e.g. Physics Study Group" required />
+            <Input id="name" name="name" placeholder='Study Room' required />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Creating...' : 'Create Room'}
