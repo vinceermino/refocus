@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Profile {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @unique @map("user_id") // Supabase Auth user ID
+  username       String   @unique
+  avatarUrl      String?  @map("avatar_url")
+  genderPref     String   @default("neutral") @map("gender_pref") // "he" | "she" | "neutral"
+  totalStudyTime Int      @default(0) @map("total_study_time") // Accumulated seconds
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  ownedRooms    Room[]         @relation("RoomOwner")
+  memberships   RoomMember[]
+  timerSessions TimerSession[]
+
+  @@map("profiles")
+}
+
+model Room {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  code      String   @unique // Short joinable code (e.g. "ABC123")
+  ownerId   String   @map("owner_id") @db.Uuid
+  isPublic  Boolean  @default(true) @map("is_public")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  owner   Profile      @relation("RoomOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members RoomMember[]
+  timers  Timer[]
+
+  @@map("rooms")
+}
+
+model RoomMember {
+  id        String   @id @default(uuid()) @db.Uuid
+  roomId    String   @map("room_id") @db.Uuid
+  profileId String   @map("profile_id") @db.Uuid
+  role      String   @default("member") // "owner" | "member"
+  joinedAt  DateTime @default(now()) @map("joined_at")
+
+  room    Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, profileId])
+  @@map("room_members")
+}
+
+model Timer {
+  id        String    @id @default(uuid()) @db.Uuid
+  roomId    String    @map("room_id") @db.Uuid
+  userId    String    @map("user_id") @db.Uuid // Who started it
+  mode      String    @default("countdown") // "countdown" | "stopwatch"
+  status    String    @default("stopped") // "running" | "paused" | "stopped"
+  duration  Int       @default(0) // Total duration in seconds (for countdown; 0 for stopwatch)
+  startedAt DateTime? @map("started_at")
+  pausedAt  DateTime? @map("paused_at")
+  elapsed   Int       @default(0) // Accumulated elapsed seconds (for pause/resume)
+  endedAt   DateTime? @map("ended_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  room     Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sessions TimerSession[]
+
+  @@map("timers")
+}
+
+model TimerSession {
+  id        String   @id @default(uuid()) @db.Uuid
+  timerId   String   @map("timer_id") @db.Uuid
+  profileId String   @map("profile_id") @db.Uuid
+  duration  Int // How long this user studied (seconds)
+  startedAt DateTime @map("started_at")
+  endedAt   DateTime @map("ended_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  timer   Timer   @relation(fields: [timerId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("timer_sessions")
+}
