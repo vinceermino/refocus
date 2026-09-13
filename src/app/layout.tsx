@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Kristi } from "next/font/google";
+import { Indie_Flower } from "next/font/google";
 import { Toaster } from "sonner";
 import { Heart, Sparkles } from "lucide-react";
 import { Providers } from "@/components/providers/providers";
 import "./globals.css";
 
-const kristi = Kristi({
+const indieFlower = Indie_Flower({
   weight: "400",
-  variable: "--font-kristi",
+  variable: "--font-indie-flower",
   subsets: ["latin"],
 });
 
@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${kristi.variable} antialiased`}
+        className={`${indieFlower.variable} antialiased`}
       >
         <Providers>
           {/* Global decorative background elements */}
