@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState, useTransition, useRef } from 'react'
 import { toast } from 'sonner'
 import { Copy, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
@@ -10,7 +10,8 @@ import { ParticipantList } from '@/components/timer/participant-list'
 import { useLocalTimer } from '@/hooks/use-local-timer'
 import { useRealtimeTimer } from '@/hooks/use-realtime-timer'
 import { usePresence } from '@/hooks/use-presence'
-import { startTimer, pauseTimer, resumeTimer, stopTimer } from '@/actions/timer'
+import { useAlarm } from '@/hooks/use-alarm'
+import { startTimer, pauseTimer, resumeTimer, stopTimer, getRemainingDailyTime } from '@/actions/timer'
 import { Button } from '@/components/ui/button'
 
 interface StudyRoomProps {
@@ -39,66 +40,149 @@ interface StudyRoomProps {
 export function StudyRoom({ room, currentUser, isOwner, initialTimer }: StudyRoomProps) {
   const { timerState, broadcastTimerUpdate } = useRealtimeTimer(room.id, initialTimer)
   const { onlineUsers } = usePresence(room.id, currentUser)
-  const timerOutput = useLocalTimer(timerState)
+  const { playAlarm, stopAlarm } = useAlarm()
+  const [isPending, startTransition] = useTransition()
 
-  const handleStart = useCallback(async (duration: number, mode: 'countdown' | 'stopwatch') => {
-    const result = await startTimer(room.id, duration, mode)
-    if ('timer' in result && result.timer) {
-      const newState = {
-        id: result.timer.id,
-        mode: result.timer.mode as 'countdown' | 'stopwatch',
-        status: 'running' as const,
-        duration: result.timer.duration,
-        startedAt: result.timer.startedAt?.toISOString() ?? new Date().toISOString(),
-        elapsed: 0,
-      }
-      broadcastTimerUpdate('timer_started', newState)
+  // Daily time tracking
+  const [dailyRemaining, setDailyRemaining] = useState<number | undefined>(undefined)
+  const [dailyUsed, setDailyUsed] = useState<number | undefined>(undefined)
+  const hasPlayedAlarmRef = useRef(false)
+
+  const timerOutput = useLocalTimer(timerState, dailyRemaining)
+
+  // Fetch daily remaining time on mount and after stop
+  const refreshDailyTime = useCallback(async () => {
+    try {
+      const result = await getRemainingDailyTime()
+      setDailyRemaining(result.remaining)
+      setDailyUsed(result.used)
+    } catch {
+      // Fail silently — daily quota is a nice-to-have
     }
-  }, [room.id, broadcastTimerUpdate])
+  }, [])
 
-  const handlePause = useCallback(async () => {
+  useEffect(() => {
+    refreshDailyTime()
+  }, [refreshDailyTime])
+
+  // Play alarm when timer completes
+  useEffect(() => {
+    if (timerOutput.isComplete && !hasPlayedAlarmRef.current) {
+      hasPlayedAlarmRef.current = true
+      playAlarm()
+
+      if (timerState.mode === 'countdown') {
+        toast.success('⏰ Timer complete! Great focus session!')
+      } else {
+        toast.warning('⏰ Daily 8-hour study limit reached!')
+      }
+    }
+
+    if (!timerOutput.isComplete) {
+      hasPlayedAlarmRef.current = false
+    }
+  }, [timerOutput.isComplete, timerState.mode, playAlarm])
+
+  // Auto-stop when daily limit hit (stopwatch mode)
+  useEffect(() => {
+    if (timerOutput.isComplete && timerState.mode === 'stopwatch' && timerState.id && timerState.status === 'running') {
+      // Auto-stop the timer
+      startTransition(async () => {
+        if (!timerState.id) return
+        const result = await stopTimer(timerState.id)
+        if ('timer' in result) {
+          const newState = {
+            id: null,
+            mode: timerState.mode,
+            status: 'stopped' as const,
+            duration: timerState.duration,
+            startedAt: null,
+            elapsed: 0,
+          }
+          broadcastTimerUpdate('timer_stopped', newState)
+          await refreshDailyTime()
+        }
+      })
+    }
+  }, [timerOutput.isComplete, timerState.mode, timerState.id, timerState.status, timerState.duration, broadcastTimerUpdate, refreshDailyTime])
+
+  const handleStart = useCallback((duration: number, mode: 'countdown' | 'stopwatch') => {
+    startTransition(async () => {
+      stopAlarm()
+      const result = await startTimer(room.id, duration, mode)
+      if ('error' in result) {
+        toast.error(result.error as string)
+        return
+      }
+      if ('timer' in result && result.timer) {
+        const newState = {
+          id: result.timer.id,
+          mode: result.timer.mode as 'countdown' | 'stopwatch',
+          status: 'running' as const,
+          duration: result.timer.duration,
+          startedAt: result.timer.startedAt?.toISOString() ?? new Date().toISOString(),
+          elapsed: 0,
+        }
+        broadcastTimerUpdate('timer_started', newState)
+
+        if (result.dailyRemaining !== undefined) {
+          setDailyRemaining(result.dailyRemaining as number)
+        }
+      }
+    })
+  }, [room.id, broadcastTimerUpdate, stopAlarm])
+
+  const handlePause = useCallback(() => {
     if (!timerState.id) return
-    const result = await pauseTimer(timerState.id)
-    if ('timer' in result && result.timer) {
-      const newState = {
-        ...timerState,
-        status: 'paused' as const,
-        elapsed: result.timer.elapsed,
-        startedAt: null,
+    startTransition(async () => {
+      const result = await pauseTimer(timerState.id!)
+      if ('timer' in result && result.timer) {
+        const newState = {
+          ...timerState,
+          status: 'paused' as const,
+          elapsed: result.timer.elapsed,
+          startedAt: null,
+        }
+        broadcastTimerUpdate('timer_paused', newState)
       }
-      broadcastTimerUpdate('timer_paused', newState)
-    }
+    })
   }, [timerState, broadcastTimerUpdate])
 
-  const handleResume = useCallback(async () => {
+  const handleResume = useCallback(() => {
     if (!timerState.id) return
-    const result = await resumeTimer(timerState.id)
-    if ('timer' in result && result.timer) {
-      const newState = {
-        ...timerState,
-        status: 'running' as const,
-        startedAt: result.timer.startedAt?.toISOString() ?? new Date().toISOString(),
+    startTransition(async () => {
+      const result = await resumeTimer(timerState.id!)
+      if ('timer' in result && result.timer) {
+        const newState = {
+          ...timerState,
+          status: 'running' as const,
+          startedAt: result.timer.startedAt?.toISOString() ?? new Date().toISOString(),
+        }
+        broadcastTimerUpdate('timer_resumed', newState)
       }
-      broadcastTimerUpdate('timer_resumed', newState)
-    }
+    })
   }, [timerState, broadcastTimerUpdate])
 
-  const handleStop = useCallback(async () => {
+  const handleStop = useCallback(() => {
     if (!timerState.id) return
-    const result = await stopTimer(timerState.id)
-    if ('timer' in result) {
-      const newState = {
-        id: null,
-        mode: timerState.mode,
-        status: 'stopped' as const,
-        duration: timerState.duration,
-        startedAt: null,
-        elapsed: 0,
+    startTransition(async () => {
+      stopAlarm()
+      const result = await stopTimer(timerState.id!)
+      if ('timer' in result) {
+        const newState = {
+          id: null,
+          mode: timerState.mode,
+          status: 'stopped' as const,
+          duration: timerState.duration,
+          startedAt: null,
+          elapsed: 0,
+        }
+        broadcastTimerUpdate('timer_stopped', newState)
+        toast.success('Study session recorded!')
+        await refreshDailyTime()
       }
-      broadcastTimerUpdate('timer_stopped', newState)
-      toast.success('Study session recorded!')
-    }
-  }, [timerState, broadcastTimerUpdate])
+    })
+  }, [timerState, broadcastTimerUpdate, stopAlarm, refreshDailyTime])
 
   const copyCode = () => {
     navigator.clipboard.writeText(room.code)
@@ -139,12 +223,15 @@ export function StudyRoom({ room, currentUser, isOwner, initialTimer }: StudyRoo
             isPaused={timerOutput.isPaused}
             isComplete={timerOutput.isComplete}
             mode={timerState.mode}
+            dailyRemaining={dailyRemaining}
+            dailyUsed={dailyUsed}
           />
           <TimerControls
             isRunning={timerOutput.isRunning}
             isPaused={timerOutput.isPaused}
             isOwner={isOwner}
             mode={timerState.mode}
+            loading={isPending}
             onStart={handleStart}
             onPause={handlePause}
             onResume={handleResume}

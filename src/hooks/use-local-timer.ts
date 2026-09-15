@@ -19,55 +19,69 @@ interface TimerOutput {
   isPaused: boolean
 }
 
-export function useLocalTimer(state: TimerState): TimerOutput {
+const MAX_DAILY_SECONDS = 8 * 60 * 60 // 8 hours
+
+export function useLocalTimer(state: TimerState, dailyRemaining?: number): TimerOutput {
   const [displaySeconds, setDisplaySeconds] = useState(0)
-  const rafRef = useRef<number>(0)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const stateRef = useRef(state)
+  stateRef.current = state
 
   const calculate = useCallback(() => {
-    if (state.status === 'stopped') {
-      return state.mode === 'countdown' ? state.duration : 0
+    const s = stateRef.current
+    if (s.status === 'stopped') {
+      return s.mode === 'countdown' ? s.duration : 0
     }
 
-    if (state.status === 'paused') {
-      if (state.mode === 'countdown') {
-        return Math.max(0, state.duration - state.elapsed)
+    if (s.status === 'paused') {
+      if (s.mode === 'countdown') {
+        return Math.max(0, s.duration - s.elapsed)
       }
-      return state.elapsed
+      return s.elapsed
     }
 
     // Running
-    if (!state.startedAt) {
-      return state.mode === 'countdown' ? state.duration : 0
+    if (!s.startedAt) {
+      return s.mode === 'countdown' ? s.duration : 0
     }
 
     const now = Date.now()
-    const started = new Date(state.startedAt).getTime()
+    const started = new Date(s.startedAt).getTime()
     const currentRunElapsed = Math.floor((now - started) / 1000)
-    const totalElapsed = state.elapsed + currentRunElapsed
+    const totalElapsed = s.elapsed + currentRunElapsed
 
-    if (state.mode === 'countdown') {
-      return Math.max(0, state.duration - totalElapsed)
+    if (s.mode === 'countdown') {
+      return Math.max(0, s.duration - totalElapsed)
     }
-    return totalElapsed
-  }, [state])
+
+    // Stopwatch: cap at daily remaining if provided, otherwise cap at 8h
+    const cap = dailyRemaining ?? MAX_DAILY_SECONDS
+    return Math.min(totalElapsed, cap)
+  }, [dailyRemaining])
 
   useEffect(() => {
+    // Immediately calculate on any state change
     setDisplaySeconds(calculate())
 
     if (state.status !== 'running') {
+      // Clear any existing interval
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
       return
     }
 
-    const tick = () => {
+    // Use 1-second interval instead of requestAnimationFrame (60fps)
+    // since the display only shows whole seconds
+    intervalRef.current = setInterval(() => {
       setDisplaySeconds(calculate())
-      rafRef.current = requestAnimationFrame(tick)
-    }
-
-    rafRef.current = requestAnimationFrame(tick)
+    }, 1000)
 
     return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current)
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
       }
     }
   }, [state.status, state.startedAt, state.elapsed, state.duration, state.mode, calculate])
@@ -75,13 +89,13 @@ export function useLocalTimer(state: TimerState): TimerOutput {
   // Handle tab visibility — recalculate on return
   useEffect(() => {
     const handleVisibility = () => {
-      if (document.visibilityState === 'visible' && state.status === 'running') {
+      if (document.visibilityState === 'visible' && stateRef.current.status === 'running') {
         setDisplaySeconds(calculate())
       }
     }
     document.addEventListener('visibilitychange', handleVisibility)
     return () => document.removeEventListener('visibilitychange', handleVisibility)
-  }, [state.status, calculate])
+  }, [calculate])
 
   // Update document title with timer value
   useEffect(() => {
@@ -95,6 +109,13 @@ export function useLocalTimer(state: TimerState): TimerOutput {
   }, [displaySeconds, state.status, state.mode])
 
   const isComplete = state.mode === 'countdown' && displaySeconds <= 0 && state.status === 'running'
+
+  // For stopwatch, check if daily limit reached
+  const dailyLimitReached = state.mode === 'stopwatch' &&
+    state.status === 'running' &&
+    dailyRemaining !== undefined &&
+    displaySeconds >= dailyRemaining
+
   const progress = state.mode === 'countdown' && state.duration > 0
     ? 1 - (displaySeconds / state.duration)
     : 0
@@ -102,7 +123,7 @@ export function useLocalTimer(state: TimerState): TimerOutput {
   return {
     displaySeconds,
     progress,
-    isComplete,
+    isComplete: isComplete || dailyLimitReached,
     isRunning: state.status === 'running',
     isPaused: state.status === 'paused',
   }

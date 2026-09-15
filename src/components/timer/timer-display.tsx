@@ -9,9 +9,11 @@ interface TimerDisplayProps {
   isPaused: boolean
   isComplete: boolean
   mode: 'countdown' | 'stopwatch'
+  dailyRemaining?: number
+  dailyUsed?: number
 }
 
-export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, isComplete, mode }: TimerDisplayProps) {
+export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, isComplete, mode, dailyRemaining, dailyUsed }: TimerDisplayProps) {
   const radius = 140
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = mode === 'countdown'
@@ -28,9 +30,13 @@ export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, is
     return 'var(--timer-running)'
   }
 
+  const dailyLimit = 8 * 60 * 60
+  const dailyProgress = dailyUsed !== undefined ? Math.min(1, dailyUsed / dailyLimit) : 0
+  const showDailyQuota = dailyUsed !== undefined
+
   return (
     <div className={cn(
-      'relative flex items-center justify-center',
+      'relative flex flex-col items-center justify-center gap-4',
       isRunning && 'animate-pulse-glow'
     )}>
       <svg
@@ -65,7 +71,7 @@ export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, is
       </svg>
 
       {/* Center content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+      <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ bottom: showDailyQuota ? '40px' : '0' }}>
         <span
           className={cn(
             'font-mono text-6xl font-bold tracking-tight transition-colors',
@@ -80,6 +86,25 @@ export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, is
           {isComplete ? 'Complete!' : isPaused ? 'Paused' : isRunning ? (mode === 'countdown' ? 'Focusing' : 'Studying') : 'Ready'}
         </span>
       </div>
+
+      {/* Daily quota indicator */}
+      {showDailyQuota && (
+        <div className="w-full max-w-[280px] mt-2">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+            <span>Daily: {formatTime(dailyUsed ?? 0)} / 8:00:00</span>
+            <span>{dailyRemaining !== undefined ? `${formatTime(dailyRemaining)} left` : ''}</span>
+          </div>
+          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <div
+              className={cn(
+                'h-full rounded-full transition-all duration-500 ease-out',
+                dailyProgress >= 1 ? 'bg-timer-danger' : dailyProgress >= 0.85 ? 'bg-timer-warning' : 'bg-accent-primary'
+              )}
+              style={{ width: `${Math.min(100, dailyProgress * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

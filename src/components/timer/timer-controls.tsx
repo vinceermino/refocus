@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Play, Pause, Square, RotateCcw, Timer, Clock } from 'lucide-react'
+import { Play, Pause, Square, Timer, Clock, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -10,6 +10,7 @@ interface TimerControlsProps {
   isPaused: boolean
   isOwner: boolean
   mode: 'countdown' | 'stopwatch'
+  loading?: boolean
   onStart: (duration: number, mode: 'countdown' | 'stopwatch') => void
   onPause: () => void
   onResume: () => void
@@ -29,6 +30,7 @@ export function TimerControls({
   isPaused,
   isOwner,
   mode: currentMode,
+  loading = false,
   onStart,
   onPause,
   onResume,
@@ -105,26 +107,27 @@ export function TimerControls({
             size="lg"
             onClick={() => onStart(mode === 'countdown' ? selectedDuration : 0, mode)}
             className="gap-2 px-8"
+            disabled={loading}
           >
-            <Play className="h-5 w-5" />
-            Start
+            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
+            {loading ? 'Starting...' : 'Start'}
           </Button>
         ) : (
           <>
             {isRunning ? (
-              <Button size="lg" variant="secondary" onClick={onPause} className="gap-2">
-                <Pause className="h-5 w-5" />
-                Pause
+              <Button size="lg" variant="secondary" onClick={onPause} className="gap-2" disabled={loading}>
+                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Pause className="h-5 w-5" />}
+                {loading ? 'Pausing...' : 'Pause'}
               </Button>
             ) : (
-              <Button size="lg" onClick={onResume} className="gap-2">
-                <Play className="h-5 w-5" />
-                Resume
+              <Button size="lg" onClick={onResume} className="gap-2" disabled={loading}>
+                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
+                {loading ? 'Resuming...' : 'Resume'}
               </Button>
             )}
-            <Button size="lg" variant="destructive" onClick={onStop} className="gap-2">
-              <Square className="h-5 w-5" />
-              Stop
+            <Button size="lg" variant="destructive" onClick={onStop} className="gap-2" disabled={loading}>
+              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Square className="h-5 w-5" />}
+              {loading ? 'Stopping...' : 'Stop'}
             </Button>
           </>
         )}

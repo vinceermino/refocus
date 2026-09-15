@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
+const MAX_DAILY_SECONDS = 8 * 60 * 60 // 8 hours = 28,800 seconds
+
 async function getAuthProfile() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -13,9 +15,51 @@ async function getAuthProfile() {
   return profile
 }
 
+/**
+ * Get total study time recorded in TimerSessions for a profile today (UTC-based day).
+ */
+async function getDailyStudyTime(profileId: string): Promise<number> {
+  const now = new Date()
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
+  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)
+
+  const result = await prisma.timerSession.aggregate({
+    where: {
+      profileId,
+      createdAt: { gte: startOfDay, lte: endOfDay },
+    },
+    _sum: { duration: true },
+  })
+
+  return result._sum.duration ?? 0
+}
+
+/**
+ * Get how many seconds remain in today's 8-hour study budget.
+ */
+export async function getRemainingDailyTime(): Promise<{ remaining: number; used: number; limit: number }> {
+  const profile = await getAuthProfile()
+  const used = await getDailyStudyTime(profile.id)
+  return {
+    remaining: Math.max(0, MAX_DAILY_SECONDS - used),
+    used,
+    limit: MAX_DAILY_SECONDS,
+  }
+}
+
 export async function startTimer(roomId: string, duration: number, mode: 'countdown' | 'stopwatch' = 'countdown') {
   const profile = await getAuthProfile()
   const now = new Date()
+
+  // Check daily limit
+  const dailyUsed = await getDailyStudyTime(profile.id)
+  const remaining = MAX_DAILY_SECONDS - dailyUsed
+  if (remaining <= 0) {
+    return { error: 'Daily 8-hour study limit reached. Take a break and come back tomorrow!' }
+  }
+
+  // For countdown, cap the duration to remaining daily time
+  const effectiveDuration = mode === 'countdown' ? Math.min(duration, remaining) : duration
 
   // Stop any existing running timer in this room
   await prisma.timer.updateMany({
@@ -29,13 +73,13 @@ export async function startTimer(roomId: string, duration: number, mode: 'countd
       userId: profile.id,
       mode,
       status: 'running',
-      duration,
+      duration: effectiveDuration,
       startedAt: now,
       elapsed: 0,
     },
   })
 
-  return { timer }
+  return { timer, dailyRemaining: remaining }
 }
 
 export async function pauseTimer(timerId: string) {
@@ -89,22 +133,27 @@ export async function stopTimer(timerId: string) {
     totalElapsed += Math.floor((now.getTime() - timer.startedAt.getTime()) / 1000)
   }
 
+  // Cap to daily remaining budget
+  const dailyUsed = await getDailyStudyTime(profile.id)
+  const dailyRemaining = Math.max(0, MAX_DAILY_SECONDS - dailyUsed)
+  const cappedElapsed = Math.min(totalElapsed, dailyRemaining)
+
   const updatedTimer = await prisma.timer.update({
     where: { id: timerId },
     data: {
       status: 'stopped',
       endedAt: now,
-      elapsed: totalElapsed,
+      elapsed: cappedElapsed,
     },
   })
 
   // Record the session for the user
-  if (totalElapsed > 0) {
+  if (cappedElapsed > 0) {
     await prisma.timerSession.create({
       data: {
         timerId: timer.id,
         profileId: profile.id,
-        duration: totalElapsed,
+        duration: cappedElapsed,
         startedAt: timer.createdAt,
         endedAt: now,
       },
@@ -113,7 +162,7 @@ export async function stopTimer(timerId: string) {
     // Update total study time
     await prisma.profile.update({
       where: { id: profile.id },
-      data: { totalStudyTime: { increment: totalElapsed } },
+      data: { totalStudyTime: { increment: cappedElapsed } },
     })
   }
 

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useTheme } from 'next-themes'
-import { Sun, Moon, LogOut, Palette, Timer } from 'lucide-react'
+import { Sun, Moon, LogOut, Palette, Timer, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAccent } from '@/components/providers/accent-provider'
 import { signOut } from '@/actions/auth'
@@ -21,12 +21,23 @@ export function Navbar({ username }: NavbarProps) {
   return (
     <nav className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-2 group">
-          <Timer className="h-5 w-5 text-accent-primary" />
-          <span className="font-bold text-lg group-hover:text-accent-primary transition-colors">
-            Re-Focus
-          </span>
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard" className="flex items-center gap-2 group">
+            <Timer className="h-5 w-5 text-accent-primary" />
+            <span className="font-bold text-lg group-hover:text-accent-primary transition-colors">
+              Re-Focus
+            </span>
+          </Link>
+
+          {/* Analytics link */}
+          <Link
+            href="/dashboard/analytics"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-accent-primary transition-colors"
+          >
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Analytics</span>
+          </Link>
+        </div>
 
         <div className="flex items-center gap-2">
           {/* Accent theme selector */}
