@@ -179,3 +179,32 @@ export async function getActiveTimer(roomId: string) {
     orderBy: { createdAt: 'desc' },
   })
 }
+
+export async function logPersonalSession(duration: number) {
+  const profile = await getAuthProfile()
+  const now = new Date()
+
+  // Cap to daily remaining budget
+  const dailyUsed = await getDailyStudyTime(profile.id)
+  const dailyRemaining = Math.max(0, MAX_DAILY_SECONDS - dailyUsed)
+  const cappedElapsed = Math.min(duration, dailyRemaining)
+
+  if (cappedElapsed > 0) {
+    const startedAt = new Date(now.getTime() - cappedElapsed * 1000)
+    await prisma.timerSession.create({
+      data: {
+        profileId: profile.id,
+        duration: cappedElapsed,
+        startedAt,
+        endedAt: now,
+      },
+    })
+
+    // Update total study time
+    await prisma.profile.update({
+      where: { id: profile.id },
+      data: { totalStudyTime: { increment: cappedElapsed } },
+    })
+  }
+  return { success: true, duration: cappedElapsed }
+}

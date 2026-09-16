@@ -2,12 +2,13 @@
 
 import { RoomCard } from '@/components/room/room-card'
 import { DashboardActions } from './dashboard-actions'
-import { Timer, Clock } from 'lucide-react'
+import { Timer, Clock, Loader2 } from 'lucide-react'
 import { formatTime } from '@/lib/utils'
 import { useUserData } from '@/components/providers/user-data-provider'
+import { PersonalTimer } from '@/components/timer/personal-timer'
 
 export default function DashboardPage() {
-  const { profile, rooms, isLoading } = useUserData()
+  const { profile, rooms, isLoading, isRefreshingStats } = useUserData()
 
   if (isLoading) {
     return <DashboardSkeleton />
@@ -23,14 +24,22 @@ export default function DashboardPage() {
         <DashboardActions />
       </div>
 
+      {/* Personal Timer */}
+      <div className="mb-12">
+        <PersonalTimer hideJoinRoom />
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="p-4 rounded-xl border border-border bg-card">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
             <Clock className="h-4 w-4" />
             <span className="text-sm">Total Study Time</span>
+            {isRefreshingStats && (
+              <Loader2 className="h-3 w-3 animate-spin text-accent-primary" />
+            )}
           </div>
-          <p className="text-2xl font-bold font-mono">
+          <p className={`text-2xl font-bold font-mono transition-all duration-300 ${isRefreshingStats ? 'opacity-50 blur-[1px] animate-pulse' : ''}`}>
             {formatTime(profile?.totalStudyTime ?? 0)}
           </p>
         </div>

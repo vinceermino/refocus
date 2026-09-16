@@ -36,8 +36,7 @@ export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, is
 
   return (
     <div className={cn(
-      'relative flex flex-col items-center justify-center gap-4',
-      isRunning && 'animate-pulse-glow'
+      'relative flex flex-col items-center justify-center gap-4'
     )}>
       <svg
         width="320"
@@ -66,7 +65,7 @@ export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, is
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          className="transition-[stroke-dashoffset] duration-200 ease-linear"
+          className="transition-all duration-500 ease-in-out"
         />
       </svg>
 
@@ -74,7 +73,7 @@ export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, is
       <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ bottom: showDailyQuota ? '40px' : '0' }}>
         <span
           className={cn(
-            'font-mono text-6xl font-bold tracking-tight transition-colors',
+            'font-mono text-6xl font-bold tracking-tight transition-colors duration-500 ease-in-out',
             isComplete && 'text-timer-danger',
             isPaused && 'text-muted-foreground',
           )}

@@ -4,6 +4,8 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { X } from 'lucide-react'
 
+import { createPortal } from 'react-dom'
+
 interface DialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -11,18 +13,25 @@ interface DialogProps {
 }
 
 export function Dialog({ open, onOpenChange, children }: DialogProps) {
-  if (!open) return null
+  const [mounted, setMounted] = React.useState(false)
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!open || !mounted) return null
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm"
         onClick={() => onOpenChange(false)}
       />
-      <div className="relative z-50 w-full max-w-md mx-4">
+      <div className="relative z-[100] w-full max-w-md mx-4">
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

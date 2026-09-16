@@ -38,7 +38,7 @@ interface StudyRoomProps {
 }
 
 export function StudyRoom({ room, currentUser, isOwner, initialTimer }: StudyRoomProps) {
-  const { timerState, broadcastTimerUpdate } = useRealtimeTimer(room.id, initialTimer)
+  const { timerState, setTimerState, broadcastTimerUpdate } = useRealtimeTimer(room.id, initialTimer)
   const { onlineUsers } = usePresence(room.id, currentUser)
   const { playAlarm, stopAlarm } = useAlarm()
   const [isPending, startTransition] = useTransition()
@@ -105,6 +105,24 @@ export function StudyRoom({ room, currentUser, isOwner, initialTimer }: StudyRoo
       })
     }
   }, [timerOutput.isComplete, timerState.mode, timerState.id, timerState.status, timerState.duration, broadcastTimerUpdate, refreshDailyTime])
+
+  const handleModeChange = useCallback((newMode: 'countdown' | 'stopwatch', duration?: number) => {
+    // Only allow mode change when timer is stopped
+    if (timerState.status !== 'stopped') return
+    setTimerState(prev => ({
+      ...prev,
+      mode: newMode,
+      duration: duration ?? (newMode === 'countdown' ? 25 * 60 : 0),
+    }))
+  }, [timerState.status, setTimerState])
+
+  const handleDurationChange = useCallback((duration: number) => {
+    if (timerState.status !== 'stopped') return
+    setTimerState(prev => ({
+      ...prev,
+      duration,
+    }))
+  }, [timerState.status, setTimerState])
 
   const handleStart = useCallback((duration: number, mode: 'countdown' | 'stopwatch') => {
     startTransition(async () => {
@@ -231,11 +249,14 @@ export function StudyRoom({ room, currentUser, isOwner, initialTimer }: StudyRoo
             isPaused={timerOutput.isPaused}
             isOwner={isOwner}
             mode={timerState.mode}
+            duration={timerState.duration}
             loading={isPending}
             onStart={handleStart}
             onPause={handlePause}
             onResume={handleResume}
             onStop={handleStop}
+            onModeChange={handleModeChange}
+            onDurationChange={handleDurationChange}
           />
         </div>
 

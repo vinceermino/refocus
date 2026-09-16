@@ -3,6 +3,13 @@
 import { useState } from 'react'
 import { Play, Pause, Square, Timer, Clock, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
 interface TimerControlsProps {
@@ -10,11 +17,14 @@ interface TimerControlsProps {
   isPaused: boolean
   isOwner: boolean
   mode: 'countdown' | 'stopwatch'
+  duration: number
   loading?: boolean
   onStart: (duration: number, mode: 'countdown' | 'stopwatch') => void
   onPause: () => void
   onResume: () => void
   onStop: () => void
+  onModeChange: (mode: 'countdown' | 'stopwatch', duration?: number) => void
+  onDurationChange: (duration: number) => void
 }
 
 const PRESETS = [
@@ -29,15 +39,17 @@ export function TimerControls({
   isRunning,
   isPaused,
   isOwner,
-  mode: currentMode,
+  mode,
+  duration,
   loading = false,
   onStart,
   onPause,
   onResume,
   onStop,
+  onModeChange,
+  onDurationChange,
 }: TimerControlsProps) {
-  const [selectedDuration, setSelectedDuration] = useState(25 * 60)
-  const [mode, setMode] = useState<'countdown' | 'stopwatch'>(currentMode)
+  const [showStopDialog, setShowStopDialog] = useState(false)
   const isActive = isRunning || isPaused
 
   if (!isOwner) {
@@ -54,7 +66,7 @@ export function TimerControls({
       {!isActive && (
         <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
           <button
-            onClick={() => setMode('countdown')}
+            onClick={() => onModeChange('countdown', 25 * 60)}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
               mode === 'countdown'
@@ -66,7 +78,7 @@ export function TimerControls({
             Countdown
           </button>
           <button
-            onClick={() => setMode('stopwatch')}
+            onClick={() => onModeChange('stopwatch', 0)}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
               mode === 'stopwatch'
@@ -86,10 +98,10 @@ export function TimerControls({
           {PRESETS.map((preset) => (
             <button
               key={preset.label}
-              onClick={() => setSelectedDuration(preset.seconds)}
+              onClick={() => onDurationChange(preset.seconds)}
               className={cn(
                 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
-                selectedDuration === preset.seconds
+                duration === preset.seconds
                   ? 'bg-accent-primary text-white shadow-sm'
                   : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80'
               )}
@@ -105,7 +117,7 @@ export function TimerControls({
         {!isActive ? (
           <Button
             size="lg"
-            onClick={() => onStart(mode === 'countdown' ? selectedDuration : 0, mode)}
+            onClick={() => onStart(mode === 'countdown' ? duration : 0, mode)}
             className="gap-2 px-8"
             disabled={loading}
           >
@@ -125,13 +137,38 @@ export function TimerControls({
                 {loading ? 'Resuming...' : 'Resume'}
               </Button>
             )}
-            <Button size="lg" variant="destructive" onClick={onStop} className="gap-2" disabled={loading}>
+            <Button size="lg" variant="destructive" onClick={() => setShowStopDialog(true)} className="gap-2" disabled={loading}>
               {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Square className="h-5 w-5" />}
               {loading ? 'Stopping...' : 'Stop'}
             </Button>
           </>
         )}
       </div>
+
+      <Dialog open={showStopDialog} onOpenChange={setShowStopDialog}>
+        <DialogContent onClose={() => setShowStopDialog(false)}>
+          <DialogHeader>
+            <DialogTitle>Stop Timer?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to stop the timer? This will end your current session and save your progress.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-3 mt-6">
+            <Button variant="outline" onClick={() => setShowStopDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setShowStopDialog(false)
+                onStop()
+              }}
+            >
+              Stop Timer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

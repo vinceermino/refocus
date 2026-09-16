@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { Heart, Coffee, Sparkles, ArrowRight, BookOpen } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { PersonalTimer } from '@/components/timer/personal-timer'
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -31,44 +32,9 @@ export default async function HomePage() {
         </div>
       </nav>
 
-      {/* Hero */}
-      <main className="flex-1 flex items-center justify-center px-4 relative z-10">
-        <div className="max-w-2xl mx-auto w-full animate-slide-up">
-
-          <div className="bg-card/80 backdrop-blur-xl border border-border shadow-2xl shadow-accent-glow rounded-3xl p-8 sm:p-12 text-center space-y-8 relative overflow-hidden">
-
-            {/* Cute top badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-primary-soft text-accent-primary text-sm font-medium border border-accent-primary/20">
-              <Sparkles className="h-4 w-4" />
-              <span>Our private study space</span>
-            </div>
-
-            <div className="space-y-4">
-              <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
-                Welcome to our <br className="hidden sm:block" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-primary to-pink-500">
-                  Study Space
-                </span>
-              </h1>
-
-
-            </div>
-
-
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href="/signup"
-                className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-accent-primary text-white font-medium hover:bg-accent-primary/90 transition-all shadow-lg shadow-accent-glow hover:scale-105 active:scale-95"
-              >
-                Enter Our Room
-                <Heart className="h-5 w-5 group-hover:fill-white transition-all" />
-              </Link>
-            </div>
-          </div>
-
-
-
-        </div>
+      {/* Hero with Personal Timer */}
+      <main className="flex-1 flex items-center justify-center px-4 relative z-10 py-12">
+        <PersonalTimer />
       </main>
     </div>
   )

@@ -88,7 +88,7 @@ export function Navbar({ username }: NavbarProps) {
 
           {/* User info */}
           {username && (
-            <span className="text-sm text-muted-foreground hidden sm:inline">{username}</span>
+            <span className="text-sm font-medium text-foreground truncate max-w-[120px]">{username}</span>
           )}
 
           {/* Sign out */}

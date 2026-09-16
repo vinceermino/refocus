@@ -77,14 +77,14 @@ model Timer {
 
 model TimerSession {
   id        String   @id @default(uuid()) @db.Uuid
-  timerId   String   @map("timer_id") @db.Uuid
+  timerId   String?  @map("timer_id") @db.Uuid
   profileId String   @map("profile_id") @db.Uuid
   duration  Int // How long this user studied (seconds)
   startedAt DateTime @map("started_at")
   endedAt   DateTime @map("ended_at")
   createdAt DateTime @default(now()) @map("created_at")
 
-  timer   Timer   @relation(fields: [timerId], references: [id], onDelete: Cascade)
+  timer   Timer?   @relation(fields: [timerId], references: [id], onDelete: Cascade)
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@map("timer_sessions")
