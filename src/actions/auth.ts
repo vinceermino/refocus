@@ -47,23 +47,3 @@ export async function signOut() {
   redirect('/')
 }
 
-export async function getProfile() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  return prisma.profile.findUnique({ where: { userId: user.id } })
-}
-
-export async function updateGenderPref(genderPref: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
-
-  await prisma.profile.update({
-    where: { userId: user.id },
-    data: { genderPref },
-  })
-
-  return { success: true }
-}

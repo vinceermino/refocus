@@ -10,7 +10,7 @@ import { useLocalTimer } from '@/hooks/use-local-timer'
 import { useAlarm } from '@/hooks/use-alarm'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function PersonalTimer({ hideJoinRoom = false }: { hideJoinRoom?: boolean }) {

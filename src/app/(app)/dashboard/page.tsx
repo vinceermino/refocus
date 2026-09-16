@@ -9,6 +9,7 @@ import { PersonalTimer } from '@/components/timer/personal-timer'
 
 export default function DashboardPage() {
   const { profile, rooms, isLoading, isRefreshingStats } = useUserData()
+  console.log('profile', profile)
 
   if (isLoading) {
     return <DashboardSkeleton />

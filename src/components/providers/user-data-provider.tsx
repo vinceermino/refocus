@@ -14,7 +14,6 @@ import { createClient } from '@/lib/supabase/client'
 interface UserProfile {
   id: string
   username: string
-  avatarUrl: string | null
   genderPref: string
   totalStudyTime: number
 }
@@ -44,18 +43,18 @@ const UserDataContext = createContext<UserData>({
   stats: null,
   isLoading: true,
   isRefreshingStats: false,
-  refreshAll: async () => {},
-  refreshRooms: async () => {},
-  refreshStats: async () => {},
+  refreshAll: async () => { },
+  refreshRooms: async () => { },
+  refreshStats: async () => { },
 })
 
-export function UserDataProvider({ children }: { children: ReactNode }) {
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [rooms, setRooms] = useState<UserRoom[]>([])
-  const [stats, setStats] = useState<StudyStats | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+export function UserDataProvider({ children, initialData }: { children: ReactNode, initialData?: Partial<UserData> | null }) {
+  const [profile, setProfile] = useState<UserProfile | null>(initialData?.profile || null)
+  const [rooms, setRooms] = useState<UserRoom[]>(initialData?.rooms || [])
+  const [stats, setStats] = useState<StudyStats | null>(initialData?.stats || null)
+  const [isLoading, setIsLoading] = useState(!initialData)
   const [isRefreshingStats, setIsRefreshingStats] = useState(false)
-  const [hasFetched, setHasFetched] = useState(false)
+  const [hasFetched, setHasFetched] = useState(!!initialData)
 
   const fetchAll = useCallback(async (showLoadingState = true) => {
     try {

@@ -24,7 +24,6 @@ interface StudyRoomProps {
   currentUser: {
     id: string
     username: string
-    avatarUrl?: string | null
   }
   isOwner: boolean
   initialTimer: {

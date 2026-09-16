@@ -98,10 +98,10 @@ export async function getRoomByCode(code: string) {
   return prisma.room.findUnique({
     where: { code },
     include: {
-      owner: { select: { id: true, username: true, avatarUrl: true } },
+      owner: { select: { id: true, username: true, } },
       members: {
         include: {
-          profile: { select: { id: true, username: true, avatarUrl: true, genderPref: true } },
+          profile: { select: { id: true, username: true, genderPref: true } },
         },
       },
       _count: { select: { members: true } },

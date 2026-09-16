@@ -40,13 +40,13 @@ export async function RoomContent({ paramsPromise }: RoomContentProps) {
 
   const timerState = activeTimer
     ? {
-        id: activeTimer.id,
-        mode: activeTimer.mode as 'countdown' | 'stopwatch',
-        status: activeTimer.status as 'running' | 'paused' | 'stopped',
-        duration: activeTimer.duration,
-        startedAt: activeTimer.startedAt?.toISOString() ?? null,
-        elapsed: activeTimer.elapsed,
-      }
+      id: activeTimer.id,
+      mode: activeTimer.mode as 'countdown' | 'stopwatch',
+      status: activeTimer.status as 'running' | 'paused' | 'stopped',
+      duration: activeTimer.duration,
+      startedAt: activeTimer.startedAt?.toISOString() ?? null,
+      elapsed: activeTimer.elapsed,
+    }
     : null
 
   return (
@@ -60,7 +60,6 @@ export async function RoomContent({ paramsPromise }: RoomContentProps) {
       currentUser={{
         id: profile.id,
         username: profile.username,
-        avatarUrl: profile.avatarUrl,
       }}
       isOwner={isOwner}
       initialTimer={timerState}

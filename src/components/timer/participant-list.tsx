@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils'
 interface Participant {
   id: string
   username: string
-  avatarUrl?: string | null
   onlineAt: string
 }
 
@@ -34,12 +33,7 @@ export function ParticipantList({ participants, currentUserId }: ParticipantList
               p.id === currentUserId && 'bg-accent-primary/5'
             )}
           >
-            <Avatar
-              fallback={p.username}
-              src={p.avatarUrl}
-              size="sm"
-              showOnline
-            />
+
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">
                 {p.username}

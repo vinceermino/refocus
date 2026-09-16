@@ -6,11 +6,10 @@ import { createClient } from '@/lib/supabase/client'
 interface PresenceUser {
   id: string
   username: string
-  avatarUrl?: string | null
   onlineAt: string
 }
 
-export function usePresence(roomId: string, currentUser: { id: string; username: string; avatarUrl?: string | null }) {
+export function usePresence(roomId: string, currentUser: { id: string; username: string }) {
   const [onlineUsers, setOnlineUsers] = useState<PresenceUser[]>([])
 
   useEffect(() => {
@@ -39,7 +38,6 @@ export function usePresence(roomId: string, currentUser: { id: string; username:
         await channel.track({
           id: currentUser.id,
           username: currentUser.username,
-          avatarUrl: currentUser.avatarUrl,
           onlineAt: new Date().toISOString(),
         })
       }
@@ -48,7 +46,7 @@ export function usePresence(roomId: string, currentUser: { id: string; username:
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [roomId, currentUser.id, currentUser.username, currentUser.avatarUrl])
+  }, [roomId, currentUser.id, currentUser.username,])
 
   return { onlineUsers }
 }
