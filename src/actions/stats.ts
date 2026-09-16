@@ -174,7 +174,7 @@ export async function getStudyStats(): Promise<StudyStats> {
 
   const roomMap = new Map<string, number>()
   roomSessions.forEach(s => {
-    const roomName = s.timer.room.name
+    const roomName = s.timer?.room?.name || 'Personal'
     roomMap.set(roomName, (roomMap.get(roomName) ?? 0) + s.duration)
   })
 
