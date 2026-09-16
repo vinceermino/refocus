@@ -53,7 +53,7 @@ export function PersonalTimer({ hideJoinRoom = false }: { hideJoinRoom?: boolean
         startedAt: null,
         elapsed: 0
       }))
-      
+
       if (profile && durationToLog > 0) {
         logPersonalSession(durationToLog).then(() => {
           refreshStats()
@@ -115,18 +115,18 @@ export function PersonalTimer({ hideJoinRoom = false }: { hideJoinRoom?: boolean
 
   const handleStop = useCallback(() => {
     stopAlarm()
-    
+
     const now = Date.now()
     const started = timerState.startedAt ? new Date(timerState.startedAt).getTime() : now
     const currentRunElapsed = timerState.status === 'running' ? Math.floor((now - started) / 1000) : 0
     const totalElapsed = timerState.elapsed + currentRunElapsed
-    
+
     if (profile && totalElapsed > 0) {
       logPersonalSession(totalElapsed).then(() => {
         refreshStats()
       }).catch(console.error)
     }
-    
+
     setTimerState(prev => ({
       ...prev,
       status: 'stopped',
@@ -180,29 +180,6 @@ export function PersonalTimer({ hideJoinRoom = false }: { hideJoinRoom?: boolean
         />
       </div>
 
-
-
-      {/* Join Room Section */}
-      {!hideJoinRoom && (
-        <div className="w-full space-y-4 text-center">
-          <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-            Or join a shared room
-          </p>
-          <form onSubmit={handleJoinRoom} className="flex gap-2">
-            <Input 
-              value={roomCode}
-              onChange={(e) => setRoomCode(e.target.value)}
-              placeholder="Enter Room Code (e.g. 5R2X)" 
-              className="text-center font-mono uppercase bg-background/50 border-border/50"
-              maxLength={6}
-            />
-            <Button type="submit" disabled={!roomCode.trim() || isJoining} className="gap-2">
-              Join
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </form>
-        </div>
-      )}
     </div>
   )
 }
