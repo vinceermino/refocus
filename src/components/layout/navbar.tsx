@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useTheme } from 'next-themes'
-import { Sun, Moon, LogOut, Palette, Timer, BarChart3 } from 'lucide-react'
+import { Sun, Moon, LogOut, Palette, Timer, BarChart3, Map } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAccent } from '@/components/providers/accent-provider'
 import { signOut } from '@/actions/auth'
@@ -36,6 +36,15 @@ export function Navbar({ username }: NavbarProps) {
           >
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Analytics</span>
+          </Link>
+
+          {/* Roadmap link */}
+          <Link
+            href="/roadmap"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-accent-primary transition-colors"
+          >
+            <Map className="h-4 w-4" />
+            <span className="hidden sm:inline">Roadmap</span>
           </Link>
         </div>
 
