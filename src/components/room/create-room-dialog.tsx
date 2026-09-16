@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { createRoom } from '@/actions/rooms'
+import { useUserData } from '@/components/providers/user-data-provider'
 
 interface CreateRoomDialogProps {
   open: boolean
@@ -16,6 +17,7 @@ interface CreateRoomDialogProps {
 export function CreateRoomDialog({ open, onOpenChange }: CreateRoomDialogProps) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { refreshRooms } = useUserData()
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -33,6 +35,7 @@ export function CreateRoomDialog({ open, onOpenChange }: CreateRoomDialogProps) 
     if ('room' in result && result.room) {
       toast.success('Room created!')
       onOpenChange(false)
+      refreshRooms()
       router.push(`/room/${result.room.code}`)
     }
     setLoading(false)

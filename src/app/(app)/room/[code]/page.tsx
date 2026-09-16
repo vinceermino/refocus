@@ -1,69 +1,33 @@
-import { notFound, redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { prisma } from '@/lib/prisma'
-import { getRoomByCode } from '@/actions/rooms'
-import { getActiveTimer } from '@/actions/timer'
-import { StudyRoom } from './study-room'
+import { Suspense } from 'react'
+import { RoomContent } from './room-content'
 
 interface RoomPageProps {
   params: Promise<{ code: string }>
 }
 
-export default async function RoomPage({ params }: RoomPageProps) {
-  const { code } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) redirect('/login')
-
-  const profile = await prisma.profile.findUnique({ where: { userId: user.id } })
-  if (!profile) redirect('/login')
-
-  const room = await getRoomByCode(code)
-  if (!room) notFound()
-
-  // Check if user is a member
-  const isMember = room.members.some((m) => m.profile.id === profile.id)
-  if (!isMember) {
-    // Auto-join if public
-    if (room.isPublic) {
-      await prisma.roomMember.create({
-        data: { roomId: room.id, profileId: profile.id, role: 'member' },
-      })
-    } else {
-      notFound()
-    }
-  }
-
-  const activeTimer = await getActiveTimer(room.id)
-  const isOwner = room.ownerId === profile.id
-
-  const timerState = activeTimer
-    ? {
-        id: activeTimer.id,
-        mode: activeTimer.mode as 'countdown' | 'stopwatch',
-        status: activeTimer.status as 'running' | 'paused' | 'stopped',
-        duration: activeTimer.duration,
-        startedAt: activeTimer.startedAt?.toISOString() ?? null,
-        elapsed: activeTimer.elapsed,
-      }
-    : null
-
+function RoomSkeleton() {
   return (
-    <StudyRoom
-      room={{
-        id: room.id,
-        name: room.name,
-        code: room.code,
-        ownerId: room.ownerId,
-      }}
-      currentUser={{
-        id: profile.id,
-        username: profile.username,
-        avatarUrl: profile.avatarUrl,
-      }}
-      isOwner={isOwner}
-      initialTimer={timerState}
-    />
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="flex items-center gap-3 mb-8">
+        <div className="h-9 w-9 bg-muted rounded-lg animate-pulse" />
+        <div className="h-8 w-48 bg-muted rounded-lg animate-pulse" />
+      </div>
+      <div className="flex flex-col items-center gap-6">
+        <div className="h-48 w-48 rounded-full bg-muted animate-pulse" />
+        <div className="h-12 w-64 bg-muted rounded-lg animate-pulse" />
+        <div className="flex gap-3">
+          <div className="h-10 w-24 bg-muted rounded-lg animate-pulse" />
+          <div className="h-10 w-24 bg-muted rounded-lg animate-pulse" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function RoomPage({ params }: RoomPageProps) {
+  return (
+    <Suspense fallback={<RoomSkeleton />}>
+      <RoomContent paramsPromise={params} />
+    </Suspense>
   )
 }

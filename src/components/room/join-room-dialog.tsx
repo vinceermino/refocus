@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { joinRoom } from '@/actions/rooms'
+import { useUserData } from '@/components/providers/user-data-provider'
 
 interface JoinRoomDialogProps {
   open: boolean
@@ -16,6 +17,7 @@ interface JoinRoomDialogProps {
 export function JoinRoomDialog({ open, onOpenChange }: JoinRoomDialogProps) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { refreshRooms } = useUserData()
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -33,6 +35,7 @@ export function JoinRoomDialog({ open, onOpenChange }: JoinRoomDialogProps) {
     if ('room' in result && result.room) {
       toast.success('Joined room!')
       onOpenChange(false)
+      refreshRooms()
       router.push(`/room/${result.room.code}`)
     }
     setLoading(false)
