@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { Indie_Flower } from "next/font/google";
+import { Inter, Indie_Flower } from "next/font/google";
 import { Toaster } from "sonner";
 import { Providers } from "@/components/providers/providers";
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 const indieFlower = Indie_Flower({
   weight: "400",
@@ -22,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${indieFlower.variable} antialiased`}
+        className={`${inter.variable} ${indieFlower.variable} font-sans antialiased`}
       >
         <Providers>
 

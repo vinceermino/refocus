@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useState, useTransition, useRef } from 'react'
 import { toast } from 'sonner'
-import { Copy, ArrowLeft } from 'lucide-react'
+import { Copy, ArrowLeft, Settings } from 'lucide-react'
 import Link from 'next/link'
+import { RoomSettingsModal } from '@/components/room/room-settings-modal'
 import { TimerDisplay } from '@/components/timer/timer-display'
 import { TimerControls } from '@/components/timer/timer-controls'
 import { ParticipantList } from '@/components/timer/participant-list'
@@ -20,6 +21,7 @@ interface StudyRoomProps {
     name: string
     code: string
     ownerId: string
+    isPublic: boolean
   }
   currentUser: {
     id: string
@@ -41,6 +43,7 @@ export function StudyRoom({ room, currentUser, isOwner, initialTimer }: StudyRoo
   const { onlineUsers } = usePresence(room.id, currentUser)
   const { playAlarm, stopAlarm } = useAlarm()
   const [isPending, startTransition] = useTransition()
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
   // Daily time tracking
   const [dailyRemaining, setDailyRemaining] = useState<number | undefined>(undefined)
@@ -217,7 +220,14 @@ export function StudyRoom({ room, currentUser, isOwner, initialTimer }: StudyRoo
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">{room.name}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">{room.name}</h1>
+              {isOwner && (
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setIsSettingsOpen(true)}>
+                  <Settings className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
             <button
               onClick={copyCode}
               className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -267,6 +277,14 @@ export function StudyRoom({ room, currentUser, isOwner, initialTimer }: StudyRoo
           />
         </div>
       </div>
+
+      {isOwner && (
+        <RoomSettingsModal
+          room={room}
+          open={isSettingsOpen}
+          onOpenChange={setIsSettingsOpen}
+        />
+      )}
     </div>
   )
 }

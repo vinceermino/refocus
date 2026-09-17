@@ -108,3 +108,40 @@ export async function getRoomByCode(code: string) {
     },
   })
 }
+
+export async function updateRoomSettings(roomId: string, data: { name: string, isPublic: boolean }) {
+  const profile = await getAuthUser()
+
+  const room = await prisma.room.findUnique({ where: { id: roomId } })
+  if (!room) return { error: 'Room not found' }
+  if (room.ownerId !== profile.id) return { error: 'Unauthorized. Only the owner can update settings.' }
+  
+  if (!data.name?.trim()) return { error: 'Room name is required' }
+
+  const updatedRoom = await prisma.room.update({
+    where: { id: roomId },
+    data: {
+      name: data.name.trim(),
+      isPublic: data.isPublic,
+    },
+  })
+
+  revalidatePath(`/room/${room.code}`)
+  revalidatePath('/dashboard')
+  return { room: updatedRoom }
+}
+
+export async function deleteRoom(roomId: string) {
+  const profile = await getAuthUser()
+
+  const room = await prisma.room.findUnique({ where: { id: roomId } })
+  if (!room) return { error: 'Room not found' }
+  if (room.ownerId !== profile.id) return { error: 'Unauthorized. Only the owner can delete the room.' }
+
+  await prisma.room.delete({
+    where: { id: roomId },
+  })
+
+  revalidatePath('/dashboard')
+  return { success: true }
+}

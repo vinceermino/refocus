@@ -19,7 +19,7 @@ export default async function HomePage() {
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 text-accent-primary">
             <Heart className="h-5 w-5 fill-accent-primary" />
-            <span className="font-bold text-lg tracking-tight">Re-Focus</span>
+            <span className="font-handwriting font-bold text-2xl tracking-tight">Re-Focus</span>
           </div>
           <div className="flex items-center gap-3">
             <Link
@@ -32,9 +32,28 @@ export default async function HomePage() {
         </div>
       </nav>
 
-      {/* Hero with Personal Timer */}
-      <main className="flex-1 flex items-center justify-center px-4 relative z-10 py-12">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 relative z-10 py-16 gap-16">
         <PersonalTimer />
+
+        {/* About the App */}
+        <div className="max-w-2xl mx-auto text-center space-y-6 animate-fade-in">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-accent-primary to-accent-primary/60 bg-clip-text text-transparent">
+            Study Together, Grow Together
+          </h2>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            Re-Focus is the perfect companion for student couples who want to stay motivated. 
+            Use the personal timer for deep-focus solo sessions, or create private study rooms to record 
+            and share your focused hours together. Support each other's academic goals, one hour at a time.
+          </p>
+          <div className="pt-4 flex justify-center">
+            <Link
+              href="/signup"
+              className="px-8 py-3 rounded-full bg-accent-primary text-primary-foreground font-semibold hover:bg-accent-primary/90 transition-all shadow-lg hover:shadow-accent-primary/25 hover:-translate-y-0.5 active:translate-y-0"
+            >
+              Get Started for Free
+            </Link>
+          </div>
+        </div>
       </main>
     </div>
   )

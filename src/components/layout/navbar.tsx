@@ -24,7 +24,7 @@ export function Navbar({ username }: NavbarProps) {
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="flex items-center gap-2 group">
             <Timer className="h-5 w-5 text-accent-primary" />
-            <span className="font-bold text-lg group-hover:text-accent-primary transition-colors">
+            <span className="font-handwriting font-bold text-2xl tracking-tight hidden sm:inline-block group-hover:text-accent-primary transition-colors">
               Re-Focus
             </span>
           </Link>
