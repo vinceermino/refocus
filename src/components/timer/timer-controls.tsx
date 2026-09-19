@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Play, Pause, Square, Timer, Clock, Loader2 } from 'lucide-react'
+import { Play, Pause, Square, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -16,14 +16,14 @@ interface TimerControlsProps {
   isRunning: boolean
   isPaused: boolean
   isOwner: boolean
-  mode: 'countdown' | 'stopwatch'
+  mode: 'countdown' | 'stopwatch' | 'rest'
   duration: number
   loading?: boolean
-  onStart: (duration: number, mode: 'countdown' | 'stopwatch') => void
+  onStart: (duration: number, mode: 'countdown' | 'stopwatch' | 'rest') => void
   onPause: () => void
   onResume: () => void
   onStop: () => void
-  onModeChange: (mode: 'countdown' | 'stopwatch', duration?: number) => void
+  onModeChange: (mode: 'countdown' | 'stopwatch' | 'rest', duration?: number) => void
   onDurationChange: (duration: number) => void
 }
 
@@ -61,54 +61,84 @@ export function TimerControls({
   }
 
   return (
-    <div className="flex flex-col items-center gap-6">
+    <div className="flex w-full min-w-0 flex-col items-center gap-6">
       {/* Mode toggle */}
       {!isActive && (
-        <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
-          <button
-            onClick={() => onModeChange('countdown', 25 * 60)}
+        <div className="flex max-w-full flex-wrap justify-center gap-1 bg-muted rounded-full p-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-pressed={mode === 'countdown'}
+            disabled={loading}
+            onClick={() => onModeChange('countdown')}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+              'rounded-full px-3 sm:px-4 font-medium transition-all duration-300',
               mode === 'countdown'
-                ? 'bg-accent-primary text-white shadow-sm'
+                ? 'bg-background shadow-sm text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            <Timer className="h-4 w-4" />
-            Countdown
-          </button>
-          <button
-            onClick={() => onModeChange('stopwatch', 0)}
+            Focus
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-pressed={mode === 'rest'}
+            disabled={loading}
+            onClick={() => onModeChange('rest')}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
-              mode === 'stopwatch'
-                ? 'bg-accent-primary text-white shadow-sm'
+              'rounded-full px-3 sm:px-4 font-medium transition-all duration-300',
+              mode === 'rest'
+                ? 'bg-background shadow-sm text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            <Clock className="h-4 w-4" />
+            Rest
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-pressed={mode === 'stopwatch'}
+            disabled={loading}
+            onClick={() => onModeChange('stopwatch')}
+            className={cn(
+              'rounded-full px-3 sm:px-4 font-medium transition-all duration-300',
+              mode === 'stopwatch'
+                ? 'bg-background shadow-sm text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
             Stopwatch
-          </button>
+          </Button>
         </div>
       )}
 
       {/* Duration presets (countdown only) */}
-      {!isActive && mode === 'countdown' && (
-        <div className="flex items-center gap-2">
-          {PRESETS.map((preset) => (
-            <button
-              key={preset.label}
-              onClick={() => onDurationChange(preset.seconds)}
-              className={cn(
-                'px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
-                duration === preset.seconds
-                  ? 'bg-accent-primary text-white shadow-sm'
-                  : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80'
-              )}
-            >
-              {preset.label}
-            </button>
-          ))}
+      {!isActive && (mode === 'countdown' || mode === 'rest') && (
+        <div className="flex flex-col items-center gap-2">
+          <label className="text-sm font-medium text-muted-foreground">
+            {mode === 'rest' ? 'Rest Duration (minutes)' : 'Focus Duration (minutes)'}
+          </label>
+          <div className="flex flex-wrap justify-center gap-2">
+            {PRESETS.map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                aria-pressed={duration === preset.seconds}
+                aria-label={`${preset.seconds / 60} minutes`}
+                disabled={loading}
+                onClick={() => onDurationChange(preset.seconds)}
+                className={cn(
+                  'min-h-10 px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
+                  duration === preset.seconds
+                    ? 'bg-accent-primary text-primary-foreground shadow-sm'
+                    : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80'
+                )}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -117,7 +147,7 @@ export function TimerControls({
         {!isActive ? (
           <Button
             size="lg"
-            onClick={() => onStart(mode === 'countdown' ? duration : 0, mode)}
+            onClick={() => onStart(mode === 'stopwatch' ? 0 : duration, mode)}
             className="gap-2 px-8"
             disabled={loading}
           >
@@ -150,7 +180,7 @@ export function TimerControls({
           <DialogHeader>
             <DialogTitle>Stop Timer?</DialogTitle>
             <DialogDescription>
-              Are you sure you want to stop the timer? This will end your current session and save your progress.
+              Are you sure you want to stop the timer? This will end your current session. Signed-in focus sessions are recorded; rest sessions are not counted as study time.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-3 mt-6">

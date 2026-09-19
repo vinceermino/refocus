@@ -29,9 +29,11 @@ model Room {
   name      String
   code      String   @unique // Short joinable code (e.g. "ABC123")
   ownerId   String   @map("owner_id") @db.Uuid
-  isPublic  Boolean  @default(true) @map("is_public")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  isPublic      Boolean  @default(true) @map("is_public")
+  focusDuration Int      @default(1500) @map("focus_duration") // 25 mins
+  restDuration  Int      @default(300) @map("rest_duration") // 5 mins
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   owner   Profile      @relation("RoomOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   members RoomMember[]

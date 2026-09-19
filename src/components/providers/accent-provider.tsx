@@ -3,10 +3,11 @@
 import {
   createContext,
   useContext,
-  useState,
   useEffect,
   type ReactNode,
 } from "react";
+
+import { useStoredValue } from "@/hooks/use-stored-value";
 
 type AccentTheme = "pink" | "dark" | "neutral";
 
@@ -21,21 +22,14 @@ const AccentContext = createContext<AccentContextType>({
 });
 
 export function AccentProvider({ children }: { children: ReactNode }) {
-  const [accent, setAccentState] = useState<AccentTheme>("neutral");
+  const [stored, setStored] = useStoredValue("accent-theme");
+  const accent: AccentTheme = stored === "pink" || stored === "dark" ? stored : "neutral";
 
   useEffect(() => {
-    const stored = localStorage.getItem("accent-theme") as AccentTheme | null;
-    if (stored) {
-      setAccentState(stored);
-      document.documentElement.setAttribute("data-accent", stored);
-    }
-  }, []);
+    document.documentElement.setAttribute("data-accent", accent);
+  }, [accent]);
 
-  const setAccent = (newAccent: AccentTheme) => {
-    setAccentState(newAccent);
-    localStorage.setItem("accent-theme", newAccent);
-    document.documentElement.setAttribute("data-accent", newAccent);
-  };
+  const setAccent = (newAccent: AccentTheme) => setStored(newAccent);
 
   return (
     <AccentContext.Provider value={{ accent, setAccent }}>

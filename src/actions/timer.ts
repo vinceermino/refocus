@@ -47,19 +47,22 @@ export async function getRemainingDailyTime(): Promise<{ remaining: number; used
   }
 }
 
-export async function startTimer(roomId: string, duration: number, mode: 'countdown' | 'stopwatch' = 'countdown') {
+export async function startTimer(roomId: string, duration: number, mode: 'countdown' | 'stopwatch' | 'rest' = 'countdown') {
   const profile = await getAuthProfile()
   const now = new Date()
 
-  // Check daily limit
-  const dailyUsed = await getDailyStudyTime(profile.id)
-  const remaining = MAX_DAILY_SECONDS - dailyUsed
-  if (remaining <= 0) {
-    return { error: 'Daily 8-hour study limit reached. Take a break and come back tomorrow!' }
-  }
+  let remaining = MAX_DAILY_SECONDS
+  let effectiveDuration = duration
 
-  // For countdown, cap the duration to remaining daily time
-  const effectiveDuration = mode === 'countdown' ? Math.min(duration, remaining) : duration
+  if (mode !== 'rest') {
+    // Check daily limit for non-rest timers
+    const dailyUsed = await getDailyStudyTime(profile.id)
+    remaining = MAX_DAILY_SECONDS - dailyUsed
+    if (remaining <= 0) {
+      return { error: 'Daily 8-hour study limit reached. Take a break and come back tomorrow!' }
+    }
+    effectiveDuration = mode === 'countdown' ? Math.min(duration, remaining) : duration
+  }
 
   // Stop any existing running timer in this room
   await prisma.timer.updateMany({
@@ -133,10 +136,14 @@ export async function stopTimer(timerId: string) {
     totalElapsed += Math.floor((now.getTime() - timer.startedAt.getTime()) / 1000)
   }
 
-  // Cap to daily remaining budget
-  const dailyUsed = await getDailyStudyTime(profile.id)
-  const dailyRemaining = Math.max(0, MAX_DAILY_SECONDS - dailyUsed)
-  const cappedElapsed = Math.min(totalElapsed, dailyRemaining)
+  let cappedElapsed = totalElapsed
+
+  if (timer.mode !== 'rest') {
+    // Cap to daily remaining budget
+    const dailyUsed = await getDailyStudyTime(profile.id)
+    const dailyRemaining = Math.max(0, MAX_DAILY_SECONDS - dailyUsed)
+    cappedElapsed = Math.min(totalElapsed, dailyRemaining)
+  }
 
   const updatedTimer = await prisma.timer.update({
     where: { id: timerId },
@@ -147,8 +154,8 @@ export async function stopTimer(timerId: string) {
     },
   })
 
-  // Record the session for the user
-  if (cappedElapsed > 0) {
+  // Record the session for the user if it's not a rest timer
+  if (cappedElapsed > 0 && timer.mode !== 'rest') {
     await prisma.timerSession.create({
       data: {
         timerId: timer.id,

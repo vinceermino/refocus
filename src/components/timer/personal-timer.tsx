@@ -1,30 +1,20 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { TimerDisplay } from '@/components/timer/timer-display'
 import { TimerControls } from '@/components/timer/timer-controls'
 import { logPersonalSession } from '@/actions/timer'
 import { useUserData } from '@/components/providers/user-data-provider'
-import { useLocalTimer } from '@/hooks/use-local-timer'
+import { useLocalTimer, type TimerState } from '@/hooks/use-local-timer'
 import { useAlarm } from '@/hooks/use-alarm'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
 
-export function PersonalTimer({ hideJoinRoom = false }: { hideJoinRoom?: boolean }) {
-  const router = useRouter()
+export function PersonalTimer() {
   const { playAlarm, stopAlarm } = useAlarm()
   const { refreshStats, profile } = useUserData()
 
-  const [timerState, setTimerState] = useState<{
-    mode: 'countdown' | 'stopwatch'
-    status: 'running' | 'paused' | 'stopped'
-    duration: number
-    startedAt: string | null
-    elapsed: number
-  }>({
+  const [timerState, setTimerState] = useState<TimerState>({
+    id: null,
     mode: 'countdown',
     status: 'stopped',
     duration: 25 * 60,
@@ -32,42 +22,42 @@ export function PersonalTimer({ hideJoinRoom = false }: { hideJoinRoom?: boolean
     elapsed: 0,
   })
 
-  const [roomCode, setRoomCode] = useState('')
-  const [isJoining, setIsJoining] = useState(false)
-
   const timerOutput = useLocalTimer(timerState)
 
   // Play alarm when timer completes
   useEffect(() => {
     if (timerOutput.isComplete) {
-      playAlarm()
-      if (timerState.mode === 'countdown') {
-        toast.success('⏰ Timer complete! Great focus session!')
-      }
+      const completion = window.setTimeout(() => {
+        playAlarm()
+        if (timerState.mode === 'countdown') {
+          toast.success('⏰ Timer complete! Great focus session!')
+        }
 
-      // Auto-stop and log session
-      const durationToLog = timerState.duration
-      setTimerState(prev => ({
-        ...prev,
-        status: 'stopped',
-        startedAt: null,
-        elapsed: 0
-      }))
+        // Auto-stop and log session
+        const durationToLog = timerState.duration
+        setTimerState(prev => ({
+          ...prev,
+          status: 'stopped',
+          startedAt: null,
+          elapsed: 0
+        }))
 
-      if (profile && durationToLog > 0) {
-        logPersonalSession(durationToLog).then(() => {
-          refreshStats()
-        }).catch(console.error)
-      }
+        if (profile && timerState.mode !== 'rest' && durationToLog > 0) {
+          logPersonalSession(durationToLog).then(() => {
+            refreshStats()
+          }).catch(console.error)
+        }
+      }, 0)
+      return () => window.clearTimeout(completion)
     }
   }, [timerOutput.isComplete, timerState.mode, playAlarm, timerState.duration, profile, refreshStats])
 
-  const handleModeChange = useCallback((newMode: 'countdown' | 'stopwatch', duration?: number) => {
+  const handleModeChange = useCallback((newMode: 'countdown' | 'stopwatch' | 'rest', duration?: number) => {
     if (timerState.status !== 'stopped') return
     setTimerState(prev => ({
       ...prev,
       mode: newMode,
-      duration: duration ?? (newMode === 'countdown' ? 25 * 60 : 0),
+      duration: duration ?? (newMode === 'countdown' ? 25 * 60 : newMode === 'rest' ? 5 * 60 : 0),
     }))
   }, [timerState.status])
 
@@ -79,9 +69,10 @@ export function PersonalTimer({ hideJoinRoom = false }: { hideJoinRoom?: boolean
     }))
   }, [timerState.status])
 
-  const handleStart = useCallback((duration: number, mode: 'countdown' | 'stopwatch') => {
+  const handleStart = useCallback((duration: number, mode: 'countdown' | 'stopwatch' | 'rest') => {
     stopAlarm()
     setTimerState({
+      id: null,
       mode,
       status: 'running',
       duration,
@@ -121,7 +112,7 @@ export function PersonalTimer({ hideJoinRoom = false }: { hideJoinRoom?: boolean
     const currentRunElapsed = timerState.status === 'running' ? Math.floor((now - started) / 1000) : 0
     const totalElapsed = timerState.elapsed + currentRunElapsed
 
-    if (profile && totalElapsed > 0) {
+    if (profile && timerState.mode !== 'rest' && totalElapsed > 0) {
       logPersonalSession(totalElapsed).then(() => {
         refreshStats()
       }).catch(console.error)
@@ -135,24 +126,11 @@ export function PersonalTimer({ hideJoinRoom = false }: { hideJoinRoom?: boolean
     }))
   }, [stopAlarm, profile, refreshStats, timerState])
 
-  const handleJoinRoom = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!roomCode.trim()) return
-
-    setIsJoining(true)
-    // If they have a timer running, maybe we should stop it, or just let them route.
-    if (timerState.status === 'running') {
-      handleStop()
-    }
-
-    router.push(`/room/${roomCode.trim().toUpperCase()}`)
-  }
-
   return (
     <div className="flex flex-col items-center w-full max-w-md mx-auto space-y-10">
 
       {/* Timer Section */}
-      <div className="flex flex-col items-center gap-8 w-full p-8 rounded-3xl bg-card/80 backdrop-blur-xl border border-border shadow-2xl shadow-accent-glow">
+      <div className="flex flex-col items-center gap-8 w-full p-4 sm:p-8 rounded-3xl bg-card/80 backdrop-blur-xl border border-border shadow-2xl shadow-accent-glow">
 
 
 

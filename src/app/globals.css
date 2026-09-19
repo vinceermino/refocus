@@ -9,19 +9,20 @@
   --card: #ffffff;
   --card-foreground: #0f172a;
   --muted: #f1f5f9;
-  --muted-foreground: #64748b;
+  --muted-foreground: #475569;
   --border: #e2e8f0;
   --secondary: #f1f5f9;
   --secondary-foreground: #334155;
   --ring: #94a3b8;
 
   /* Neutral accent (default) */
-  --accent-primary: #6366f1;
+  --accent-primary: #4f46e5;
+  --primary-foreground: #ffffff;
   --accent-primary-soft: #e0e7ff;
   --accent-glow: rgba(99, 102, 241, 0.15);
-  --timer-running: #22c55e;
-  --timer-warning: #f59e0b;
-  --timer-danger: #ef4444;
+  --timer-running: #15803d;
+  --timer-warning: #a16207;
+  --timer-danger: #b91c1c;
 }
 
 /* Dark mode base */
@@ -38,6 +39,7 @@
   --ring: #475569;
 
   --accent-primary: #818cf8;
+  --primary-foreground: #0f172a;
   --accent-primary-soft: #1e1b4b;
   --accent-glow: rgba(129, 140, 248, 0.1);
   --timer-running: #4ade80;
@@ -47,7 +49,7 @@
 
 /* ===== Pink Accent (She) ===== */
 [data-accent="pink"] {
-  --accent-primary: #ec4899;
+  --accent-primary: #be185d;
   --accent-primary-soft: #fce7f3;
   --accent-glow: rgba(236, 72, 153, 0.15);
 }
@@ -60,7 +62,7 @@
 }
 
 :root[data-accent="pink"] {
-  --accent-primary: #ec4899;
+  --accent-primary: #be185d;
   --accent-primary-soft: #fce7f3;
   --accent-glow: rgba(236, 72, 153, 0.15);
 }
@@ -117,6 +119,7 @@ body {
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-accent-primary: var(--accent-primary);
+  --color-primary-foreground: var(--primary-foreground);
   --color-accent-primary-soft: var(--accent-primary-soft);
   --color-accent-glow: var(--accent-glow);
   --color-timer-running: var(--timer-running);
@@ -188,4 +191,21 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
+}
+
+/* Shared keyboard and motion preferences apply to native controls and links too. */
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 3px;
+}
+
+main:focus { outline: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

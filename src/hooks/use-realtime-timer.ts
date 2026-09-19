@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
 interface TimerState {
   id: string | null
-  mode: 'countdown' | 'stopwatch'
+  mode: 'countdown' | 'stopwatch' | 'rest'
   status: 'running' | 'paused' | 'stopped'
   duration: number
   startedAt: string | null
@@ -29,7 +29,7 @@ export function useRealtimeTimer(roomId: string, initialTimer?: TimerState | nul
       elapsed: 0,
     }
   )
-  const [channel, setChannel] = useState<RealtimeChannel | null>(null)
+  const channel = useRef<RealtimeChannel | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -43,24 +43,25 @@ export function useRealtimeTimer(roomId: string, initialTimer?: TimerState | nul
     })
 
     ch.subscribe()
-    setChannel(ch)
+    channel.current = ch
 
     return () => {
+      channel.current = null
       supabase.removeChannel(ch)
     }
   }, [roomId])
 
   const broadcastTimerUpdate = useCallback(
     (type: BroadcastPayload['type'], timer: TimerState) => {
-      if (!channel) return
-      channel.send({
+      if (!channel.current) return
+      channel.current.send({
         type: 'broadcast',
         event: 'timer_update',
         payload: { type, timer } as BroadcastPayload,
       })
       setTimerState(timer)
     },
-    [channel]
+    []
   )
 
   return { timerState, setTimerState, broadcastTimerUpdate }

@@ -109,7 +109,7 @@ export async function getRoomByCode(code: string) {
   })
 }
 
-export async function updateRoomSettings(roomId: string, data: { name: string, isPublic: boolean }) {
+export async function updateRoomSettings(roomId: string, data: { name: string, isPublic: boolean, focusDuration?: number, restDuration?: number }) {
   const profile = await getAuthUser()
 
   const room = await prisma.room.findUnique({ where: { id: roomId } })
@@ -123,6 +123,8 @@ export async function updateRoomSettings(roomId: string, data: { name: string, i
     data: {
       name: data.name.trim(),
       isPublic: data.isPublic,
+      ...(data.focusDuration && { focusDuration: data.focusDuration }),
+      ...(data.restDuration && { restDuration: data.restDuration }),
     },
   })
 

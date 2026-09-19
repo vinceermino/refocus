@@ -22,6 +22,8 @@ interface StudyRoomProps {
     code: string
     ownerId: string
     isPublic: boolean
+    focusDuration: number
+    restDuration: number
   }
   currentUser: {
     id: string
@@ -30,7 +32,7 @@ interface StudyRoomProps {
   isOwner: boolean
   initialTimer: {
     id: string
-    mode: 'countdown' | 'stopwatch'
+    mode: 'countdown' | 'stopwatch' | 'rest'
     status: 'running' | 'paused' | 'stopped'
     duration: number
     startedAt: string | null
@@ -64,7 +66,8 @@ export function StudyRoom({ room, currentUser, isOwner, initialTimer }: StudyRoo
   }, [])
 
   useEffect(() => {
-    refreshDailyTime()
+    const request = window.setTimeout(() => { void refreshDailyTime() }, 0)
+    return () => window.clearTimeout(request)
   }, [refreshDailyTime])
 
   // Play alarm when timer completes
@@ -108,15 +111,20 @@ export function StudyRoom({ room, currentUser, isOwner, initialTimer }: StudyRoo
     }
   }, [timerOutput.isComplete, timerState.mode, timerState.id, timerState.status, timerState.duration, broadcastTimerUpdate, refreshDailyTime])
 
-  const handleModeChange = useCallback((newMode: 'countdown' | 'stopwatch', duration?: number) => {
+  const handleModeChange = useCallback((newMode: 'countdown' | 'stopwatch' | 'rest', duration?: number) => {
     // Only allow mode change when timer is stopped
     if (timerState.status !== 'stopped') return
+
+    let defaultDuration = 0
+    if (newMode === 'countdown') defaultDuration = room.focusDuration
+    if (newMode === 'rest') defaultDuration = room.restDuration
+
     setTimerState(prev => ({
       ...prev,
       mode: newMode,
-      duration: duration ?? (newMode === 'countdown' ? 25 * 60 : 0),
+      duration: duration ?? defaultDuration,
     }))
-  }, [timerState.status, setTimerState])
+  }, [timerState.status, setTimerState, room.focusDuration, room.restDuration])
 
   const handleDurationChange = useCallback((duration: number) => {
     if (timerState.status !== 'stopped') return
@@ -126,7 +134,7 @@ export function StudyRoom({ room, currentUser, isOwner, initialTimer }: StudyRoo
     }))
   }, [timerState.status, setTimerState])
 
-  const handleStart = useCallback((duration: number, mode: 'countdown' | 'stopwatch') => {
+  const handleStart = useCallback((duration: number, mode: 'countdown' | 'stopwatch' | 'rest') => {
     startTransition(async () => {
       stopAlarm()
       const result = await startTimer(room.id, duration, mode)
@@ -137,7 +145,7 @@ export function StudyRoom({ room, currentUser, isOwner, initialTimer }: StudyRoo
       if ('timer' in result && result.timer) {
         const newState = {
           id: result.timer.id,
-          mode: result.timer.mode as 'countdown' | 'stopwatch',
+          mode: result.timer.mode as 'countdown' | 'stopwatch' | 'rest',
           status: 'running' as const,
           duration: result.timer.duration,
           startedAt: result.timer.startedAt?.toISOString() ?? new Date().toISOString(),
@@ -204,31 +212,34 @@ export function StudyRoom({ room, currentUser, isOwner, initialTimer }: StudyRoo
     })
   }, [timerState, broadcastTimerUpdate, stopAlarm, refreshDailyTime])
 
-  const copyCode = () => {
-    navigator.clipboard.writeText(room.code)
-    toast.success('Room code copied!')
+  const copyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(room.code)
+      toast.success('Room code copied!')
+    } catch {
+      toast.error('Unable to copy. Select and copy the room code below the title.')
+    }
   }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Room header */}
       <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+        <div className="flex min-w-0 items-center gap-3">
+          <Link href="/dashboard" aria-label="Back to dashboard" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg hover:bg-muted">
+            <ArrowLeft className="h-4 w-4" />
           </Link>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">{room.name}</h1>
+              <h1 className="text-2xl font-bold break-words min-w-0">{room.name}</h1>
               {isOwner && (
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setIsSettingsOpen(true)}>
+                <Button variant="ghost" size="icon" aria-label="Room settings" className="shrink-0 text-muted-foreground" onClick={() => setIsSettingsOpen(true)}>
                   <Settings className="h-4 w-4" />
                 </Button>
               )}
             </div>
             <button
+              aria-label={`Copy room code ${room.code}`}
               onClick={copyCode}
               className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >

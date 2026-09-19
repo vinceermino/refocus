@@ -18,7 +18,7 @@ export default function RoadmapPage() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-accent-primary to-accent-primary/50 bg-clip-text text-transparent">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-accent-primary">
           {roadmapTitle} Roadmap
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
@@ -26,10 +26,11 @@ export default function RoadmapPage() {
         </p>
 
         {/* Custom Tab Switcher */}
-        <div className="inline-flex bg-muted/50 p-1 rounded-xl">
+        <div className="inline-flex max-w-full flex-wrap justify-center bg-muted/50 p-1 rounded-xl">
           <button
+            aria-pressed={activeTab === 'civil'}
             onClick={() => setActiveTab('civil')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 px-3 sm:px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
               activeTab === 'civil'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
@@ -39,8 +40,9 @@ export default function RoadmapPage() {
             Civil Engineering
           </button>
           <button
+            aria-pressed={activeTab === 'cs'}
             onClick={() => setActiveTab('cs')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 px-3 sm:px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
               activeTab === 'cs'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
@@ -54,7 +56,7 @@ export default function RoadmapPage() {
 
       {/* Timeline */}
       <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent mt-12">
-        {currentRoadmap.map((step, index) => {
+        {currentRoadmap.map((step) => {
           const Icon = step.icon
           
           return (
@@ -129,7 +131,7 @@ export default function RoadmapPage() {
           <ArrowDown className="w-5 h-5" />
         </div>
         <p className="text-muted-foreground text-sm">
-          More advanced domains unlock after completing the core roadmap for your chosen field.
+          Explore any stage at your own pace. Topic checklists are saved in this browser.
         </p>
       </div>
     </div>

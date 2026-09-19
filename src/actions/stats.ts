@@ -131,7 +131,7 @@ export async function getStudyStats(): Promise<StudyStats> {
 
     if (sortedDays[0] === todayStr || sortedDays[0] === yesterdayStr) {
       // Count current streak
-      let expectedDate = new Date(sortedDays[0])
+      const expectedDate = new Date(sortedDays[0])
       for (const dayStr of sortedDays) {
         const expStr = `${expectedDate.getFullYear()}-${String(expectedDate.getMonth() + 1).padStart(2, '0')}-${String(expectedDate.getDate()).padStart(2, '0')}`
         if (dayStr === expStr) {

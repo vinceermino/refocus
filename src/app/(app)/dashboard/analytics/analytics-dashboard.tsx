@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { ArrowLeft, Clock, Flame, Target, BarChart3, Trophy, Zap } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import type { StudyStats } from '@/actions/stats'
 
 function formatDuration(totalSeconds: number): string {
@@ -46,7 +45,7 @@ function StatCard({ icon: Icon, label, value, subValue, accentColor }: {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">{label}</p>
-          <p className="text-2xl font-bold mt-0.5">{value}</p>
+          <p className="text-2xl font-bold mt-0.5 break-words">{value}</p>
           {subValue && <p className="text-xs text-muted-foreground mt-0.5">{subValue}</p>}
         </div>
       </div>
@@ -201,10 +200,8 @@ export function AnalyticsDashboard({ stats }: { stats: StudyStats }) {
     <div className="max-w-5xl mx-auto px-4 py-8 animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
-        <Link href="/dashboard">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+        <Link href="/dashboard" aria-label="Back to dashboard" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg hover:bg-muted">
+          <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
           <h1 className="text-3xl font-bold">Analytics</h1>
@@ -213,7 +210,7 @@ export function AnalyticsDashboard({ stats }: { stats: StudyStats }) {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           icon={Clock}
           label="Today"

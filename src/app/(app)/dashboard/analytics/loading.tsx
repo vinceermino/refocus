@@ -1,4 +1,4 @@
-import { ArrowLeft, Clock, Flame, Target, BarChart3, Trophy, Zap } from 'lucide-react'
+import { Clock, Flame, Target, BarChart3, Trophy, Zap } from 'lucide-react'
 
 export default function Loading() {
   return (

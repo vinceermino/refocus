@@ -30,6 +30,7 @@ interface UserData {
   profile: UserProfile | null
   rooms: UserRoom[]
   stats: StudyStats | null
+  error: string | null
   isLoading: boolean
   isRefreshingStats: boolean
   refreshAll: () => Promise<void>
@@ -41,6 +42,7 @@ const UserDataContext = createContext<UserData>({
   profile: null,
   rooms: [],
   stats: null,
+  error: null,
   isLoading: true,
   isRefreshingStats: false,
   refreshAll: async () => { },
@@ -49,6 +51,7 @@ const UserDataContext = createContext<UserData>({
 })
 
 export function UserDataProvider({ children, initialData }: { children: ReactNode, initialData?: Partial<UserData> | null }) {
+  const [error, setError] = useState<string | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(initialData?.profile || null)
   const [rooms, setRooms] = useState<UserRoom[]>(initialData?.rooms || [])
   const [stats, setStats] = useState<StudyStats | null>(initialData?.stats || null)
@@ -63,17 +66,18 @@ export function UserDataProvider({ children, initialData }: { children: ReactNod
       }
       const res = await fetch('/api/user-data')
       if (!res.ok) {
-        // Not authenticated or error — just stop loading
-        setIsLoading(false)
-        return
+        throw new Error(res.status === 401
+          ? 'Your session has ended. Sign in to load your study data.'
+          : 'Unable to load your study data. Check your connection and try again.')
       }
       const data = await res.json()
+      setError(null)
       setProfile(data.profile)
       setRooms(data.rooms)
       setStats(data.stats)
       setHasFetched(true)
     } catch (err) {
-      console.error('Failed to fetch user data:', err)
+      setError(err instanceof Error ? err.message : 'Unable to load your study data. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -82,13 +86,14 @@ export function UserDataProvider({ children, initialData }: { children: ReactNod
   const refreshRooms = useCallback(async () => {
     try {
       const res = await fetch('/api/user-data')
-      if (!res.ok) return
+      if (!res.ok) throw new Error('Unable to refresh your study data. Please try again.')
       const data = await res.json()
       setRooms(data.rooms)
       // Also update profile since totalStudyTime might have changed
+      setError(null)
       setProfile(data.profile)
     } catch (err) {
-      console.error('Failed to refresh rooms:', err)
+      setError(err instanceof Error ? err.message : 'Unable to refresh your rooms.')
     }
   }, [])
 
@@ -96,12 +101,13 @@ export function UserDataProvider({ children, initialData }: { children: ReactNod
     try {
       setIsRefreshingStats(true)
       const res = await fetch('/api/user-data')
-      if (!res.ok) return
+      if (!res.ok) throw new Error('Unable to refresh your study data. Please try again.')
       const data = await res.json()
       setStats(data.stats)
+      setError(null)
       setProfile(data.profile)
     } catch (err) {
-      console.error('Failed to refresh stats:', err)
+      setError(err instanceof Error ? err.message : 'Unable to refresh your stats.')
     } finally {
       setIsRefreshingStats(false)
     }
@@ -110,7 +116,9 @@ export function UserDataProvider({ children, initialData }: { children: ReactNod
   // Fetch once on mount (only runs in browser)
   useEffect(() => {
     if (!hasFetched) {
-      fetchAll()
+      // Schedule the initial request; cleanup avoids a duplicate request in Strict Mode.
+      const request = window.setTimeout(() => { void fetchAll() }, 0)
+      return () => window.clearTimeout(request)
     }
   }, [hasFetched, fetchAll])
 
@@ -137,6 +145,7 @@ export function UserDataProvider({ children, initialData }: { children: ReactNod
     <UserDataContext.Provider
       value={{
         profile,
+        error,
         rooms,
         stats,
         isLoading,

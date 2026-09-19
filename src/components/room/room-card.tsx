@@ -20,8 +20,8 @@ export function RoomCard({ room }: RoomCardProps) {
     <Link href={`/room/${room.code}`}>
       <Card className="hover:border-accent-primary/50 transition-all hover:shadow-md cursor-pointer group">
         <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <CardTitle className="group-hover:text-accent-primary transition-colors">
+          <div className="flex items-start justify-between gap-3">
+            <CardTitle className="min-w-0 break-words group-hover:text-accent-primary transition-colors">
               {room.name}
             </CardTitle>
             {activeTimer && (
@@ -32,7 +32,7 @@ export function RoomCard({ room }: RoomCardProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <Users className="h-4 w-4" />
               {room._count.members} member{room._count.members !== 1 ? 's' : ''}

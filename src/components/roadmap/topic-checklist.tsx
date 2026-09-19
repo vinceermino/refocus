@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { ShieldCheck, Check, Layers } from 'lucide-react'
+import { useMemo } from 'react'
+import { useStoredValue } from '@/hooks/use-stored-value'
+import { ShieldCheck, Layers } from 'lucide-react'
 import type { Topic } from '@/lib/data/roadmaps'
 
 interface TopicChecklistProps {
@@ -11,34 +12,18 @@ interface TopicChecklistProps {
 }
 
 export function TopicChecklist({ topics, stageId, track }: TopicChecklistProps) {
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({})
-  const [isMounted, setIsMounted] = useState(false)
+  const [saved, setSaved] = useStoredValue(`roadmap-${track}-stage-${stageId}`)
+  const checkedItems = useMemo<Record<string, boolean>>(() => {
+    try {
+      const parsed: unknown = JSON.parse(saved || '{}')
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {}
+      return Object.fromEntries(Object.entries(parsed).filter(([, value]) => typeof value === 'boolean'))
+    } catch { return {} }
+  }, [saved])
 
-  // Load from local storage on mount
-  useEffect(() => {
-    setIsMounted(true)
-    const saved = localStorage.getItem(`roadmap-${track}-stage-${stageId}`)
-    if (saved) {
-      try {
-        setCheckedItems(JSON.parse(saved))
-      } catch (e) {
-        console.error("Failed to parse checklist data")
-      }
-    }
-  }, [track, stageId])
-
-  // Save to local storage on change
   const toggleCheck = (topicName: string, subtopic: string) => {
     const key = `${topicName}-${subtopic}`
-    setCheckedItems(prev => {
-      const next = { ...prev, [key]: !prev[key] }
-      localStorage.setItem(`roadmap-${track}-stage-${stageId}`, JSON.stringify(next))
-      return next
-    })
-  }
-
-  if (!isMounted) {
-    return null // prevent hydration mismatch
+    setSaved(JSON.stringify({ ...checkedItems, [key]: !checkedItems[key] }))
   }
 
   return (
@@ -69,21 +54,16 @@ export function TopicChecklist({ topics, stageId, track }: TopicChecklistProps) 
                           const isChecked = !!checkedItems[key]
                           
                           return (
-                            <li 
-                              key={j} 
-                              className={`flex items-center gap-3 text-sm px-4 py-2.5 transition-all cursor-pointer select-none hover:bg-muted/50 ${
+                            <li key={j}>
+                                <label className={`flex items-center gap-3 text-sm px-4 py-2.5 transition-all cursor-pointer select-none hover:bg-muted/50 ${
                                 isChecked ? 'bg-emerald-500/5' : ''
                               }`}
-                              onClick={() => toggleCheck(`${topic.name}-prereq-${req.name}`, sub)}
                             >
-                              <div className={`flex items-center justify-center w-4 h-4 rounded transition-colors shrink-0 ${
-                                isChecked ? 'bg-emerald-500 text-primary-foreground' : 'border-2 border-muted-foreground/40'
-                              }`}>
-                                {isChecked && <Check className="w-3 h-3" strokeWidth={3} />}
-                              </div>
+                              <input type="checkbox" checked={isChecked} onChange={() => toggleCheck(`${topic.name}-prereq-${req.name}`, sub)} className="h-5 w-5 shrink-0 accent-accent-primary" />
                               <span className={`${isChecked ? 'text-muted-foreground line-through decoration-emerald-500/50' : ''}`}>
                                 {sub}
                               </span>
+                                </label>
                             </li>
                           )
                         })}
@@ -109,23 +89,18 @@ export function TopicChecklist({ topics, stageId, track }: TopicChecklistProps) 
                     const isChecked = !!checkedItems[key]
                     
                     return (
-                      <li 
-                        key={i} 
-                        className={`flex items-center gap-4 text-sm px-4 py-3 rounded-xl border transition-all cursor-pointer select-none ${
+                      <li key={i}>
+                        <label className={`flex items-center gap-4 text-sm px-4 py-3 rounded-xl border transition-all cursor-pointer select-none ${
                           isChecked 
                             ? 'bg-emerald-500/10 border-emerald-500/30 text-foreground' 
                             : 'bg-muted/30 border-border/50 hover:bg-muted/50'
                         }`}
-                        onClick={() => toggleCheck(topic.name, sub)}
                       >
-                        <div className={`flex items-center justify-center w-5 h-5 rounded transition-colors shrink-0 ${
-                          isChecked ? 'bg-emerald-500 text-primary-foreground' : 'border-2 border-muted-foreground/40'
-                        }`}>
-                          {isChecked && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
-                        </div>
+                        <input type="checkbox" checked={isChecked} onChange={() => toggleCheck(topic.name, sub)} className="h-5 w-5 shrink-0 accent-accent-primary" />
                         <span className={`font-medium ${isChecked ? 'text-muted-foreground line-through decoration-emerald-500/50' : ''}`}>
                           {sub}
                         </span>
+                        </label>
                       </li>
                     )
                   })}

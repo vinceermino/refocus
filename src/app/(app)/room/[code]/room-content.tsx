@@ -57,6 +57,8 @@ export async function RoomContent({ paramsPromise }: RoomContentProps) {
         code: room.code,
         ownerId: room.ownerId,
         isPublic: room.isPublic,
+        focusDuration: room.focusDuration,
+        restDuration: room.restDuration,
       }}
       currentUser={{
         id: profile.id,

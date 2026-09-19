@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { unstable_rethrow } from 'next/navigation'
 import { getUserData } from '@/lib/actions/user-data'
 
 export async function GET() {
@@ -11,6 +12,7 @@ export async function GET() {
 
     return NextResponse.json(result.data)
   } catch (error) {
+    unstable_rethrow(error)
     console.error('Error fetching user data:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

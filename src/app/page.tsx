@@ -32,18 +32,19 @@ export default async function HomePage() {
         </div>
       </nav>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-4 relative z-10 py-16 gap-16">
+      <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col items-center justify-center px-4 relative z-10 py-8 sm:py-16 gap-10 sm:gap-16">
+        <h1 className="sr-only">Personal study timer</h1>
         <PersonalTimer />
 
         {/* About the App */}
         <div className="max-w-2xl mx-auto text-center space-y-6 animate-fade-in">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-accent-primary to-accent-primary/60 bg-clip-text text-transparent">
+          <h2 className="text-3xl font-bold text-accent-primary">
             Study Together, Grow Together
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
             Re-Focus is the perfect companion for student couples who want to stay motivated. 
             Use the personal timer for deep-focus solo sessions, or create private study rooms to record 
-            and share your focused hours together. Support each other's academic goals, one hour at a time.
+            and share your focused hours together. Support each other&apos;s academic goals, one hour at a time.
           </p>
           <div className="pt-4 flex justify-center">
             <Link

@@ -128,7 +128,7 @@ export async function getUserData() {
     const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`
 
     if (sortedDays[0] === todayStr || sortedDays[0] === yesterdayStr) {
-      let expectedDate = new Date(sortedDays[0])
+      const expectedDate = new Date(sortedDays[0])
       for (const dayStr of sortedDays) {
         const expStr = `${expectedDate.getFullYear()}-${String(expectedDate.getMonth() + 1).padStart(2, '0')}-${String(expectedDate.getDate()).padStart(2, '0')}`
         if (dayStr === expStr) {

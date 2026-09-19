@@ -15,6 +15,8 @@ interface RoomSettingsModalProps {
     id: string
     name: string
     isPublic: boolean
+    focusDuration: number
+    restDuration: number
   }
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -23,38 +25,57 @@ interface RoomSettingsModalProps {
 export function RoomSettingsModal({ room, open, onOpenChange }: RoomSettingsModalProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  
+
   const [name, setName] = useState(room.name)
   const [isPublic, setIsPublic] = useState(room.isPublic)
+  const [focusDurationMinutes, setFocusDurationMinutes] = useState(String(room.focusDuration / 60))
+  const [restDurationMinutes, setRestDurationMinutes] = useState(String(room.restDuration / 60))
+  const [error, setError] = useState<string | null>(null)
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
 
-  const handleSave = () => {
+  const handleSave = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError(null)
     if (!name.trim()) {
-      toast.error('Room name cannot be empty')
+      setError('Room name cannot be empty')
       return
     }
 
     startTransition(async () => {
-      const result = await updateRoomSettings(room.id, { name, isPublic })
-      if (result.error) {
-        toast.error(result.error)
-      } else {
-        toast.success('Room settings updated successfully')
-        onOpenChange(false)
+      try {
+        const result = await updateRoomSettings(room.id, {
+          name,
+          isPublic,
+          focusDuration: Number(focusDurationMinutes) * 60,
+          restDuration: Number(restDurationMinutes) * 60,
+        })
+        if (result.error) {
+          setError(result.error)
+        } else {
+          toast.success('Room settings updated successfully')
+          onOpenChange(false)
+        }
+      } catch {
+        setError('Unable to save your changes. Check your connection and try again.')
       }
     })
   }
 
   const handleDelete = () => {
+    setError(null)
     startTransition(async () => {
-      const result = await deleteRoom(room.id)
-      if (result.error) {
-        toast.error(result.error)
-        setIsConfirmingDelete(false)
-      } else {
-        toast.success('Room deleted successfully')
-        onOpenChange(false)
-        router.push('/dashboard')
+      try {
+        const result = await deleteRoom(room.id)
+        if (result.error) {
+          setError(result.error)
+          setIsConfirmingDelete(false)
+        } else {
+          toast.success('Room deleted successfully')
+          onOpenChange(false)
+          router.push('/dashboard')
+        }
+      } catch {
+        setError('Unable to delete the room. Check your connection and try again.')
       }
     })
   }
@@ -62,11 +83,12 @@ export function RoomSettingsModal({ room, open, onOpenChange }: RoomSettingsModa
   // Reset state when closing
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
-      setTimeout(() => {
-        setIsConfirmingDelete(false)
-        setName(room.name)
-        setIsPublic(room.isPublic)
-      }, 200) // wait for animation
+      setIsConfirmingDelete(false)
+      setName(room.name)
+      setIsPublic(room.isPublic)
+      setFocusDurationMinutes(String(room.focusDuration / 60))
+      setRestDurationMinutes(String(room.restDuration / 60))
+      setError(null)
     }
     onOpenChange(newOpen)
   }
@@ -85,53 +107,88 @@ export function RoomSettingsModal({ room, open, onOpenChange }: RoomSettingsModa
         </DialogHeader>
 
         <div className="space-y-6 mt-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Room Name</label>
-            <Input 
-              value={name} 
-              onChange={(e) => setName(e.target.value)} 
-              disabled={isPending}
-              placeholder="e.g. Late Night Study Session"
-            />
-          </div>
-
-          <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/20">
-            <div className="space-y-0.5">
-              <label className="text-sm font-medium cursor-pointer" htmlFor="public-toggle">
-                Public Room
-              </label>
-              <p className="text-xs text-muted-foreground">
-                Anyone with the code can join automatically.
-              </p>
+          {error && <p role="alert" className="rounded-lg border border-timer-danger/30 p-3 text-sm text-timer-danger">{error}</p>}
+          <form onSubmit={handleSave} aria-busy={isPending} className="space-y-6">
+            <div className="space-y-2">
+              <label htmlFor="room-name" className="text-sm font-medium">Room Name</label>
+              <Input
+                id="room-name"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isPending}
+                placeholder="e.g. Late Night Study Session"
+              />
             </div>
-            <input 
-              id="public-toggle"
-              type="checkbox"
-              checked={isPublic}
-              onChange={(e) => setIsPublic(e.target.checked)}
-              disabled={isPending}
-              className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-            />
-          </div>
 
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isPending}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} disabled={isPending || (name === room.name && isPublic === room.isPublic)}>
-              {isPending ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </div>
+            <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/20">
+              <div className="space-y-0.5">
+                <label className="text-sm font-medium cursor-pointer" htmlFor="public-toggle">
+                  Public Room
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  Anyone with the code can join automatically.
+                </p>
+              </div>
+              <input
+                id="public-toggle"
+                type="checkbox"
+                checked={isPublic}
+                onChange={(e) => setIsPublic(e.target.checked)}
+                disabled={isPending}
+                className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="focus-duration" className="text-sm font-medium">Focus Duration (min)</label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={120}
+                  id="focus-duration"
+                  required
+                  value={focusDurationMinutes}
+                  onChange={(e) => setFocusDurationMinutes(e.target.value)}
+                  disabled={isPending}
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="rest-duration" className="text-sm font-medium">Rest Duration (min)</label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={60}
+                  id="rest-duration"
+                  required
+                  value={restDurationMinutes}
+                  onChange={(e) => setRestDurationMinutes(e.target.value)}
+                  disabled={isPending}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isPending}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isPending || (name === room.name && isPublic === room.isPublic && Number(focusDurationMinutes) * 60 === room.focusDuration && Number(restDurationMinutes) * 60 === room.restDuration)}>
+                {isPending ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+
+          </form>
 
           {/* Danger Zone */}
           <div className="pt-6 mt-6 border-t border-border/50">
-            <h3 className="text-sm font-semibold text-red-500 mb-2 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-timer-danger mb-2 flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
               Danger Zone
             </h3>
             {isConfirmingDelete ? (
               <div className="space-y-3 p-3 rounded-lg border border-red-500/20 bg-red-500/5">
-                <p className="text-sm text-red-500/80">Are you absolutely sure? This action cannot be undone.</p>
+                <p className="text-sm text-timer-danger">Are you absolutely sure? This action cannot be undone.</p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={() => setIsConfirmingDelete(false)} disabled={isPending}>
                     Cancel
@@ -142,9 +199,9 @@ export function RoomSettingsModal({ room, open, onOpenChange }: RoomSettingsModa
                 </div>
               </div>
             ) : (
-              <Button 
-                variant="outline" 
-                className="w-full text-red-500 hover:text-red-500 hover:bg-red-500/10 border-red-500/20" 
+              <Button
+                variant="outline"
+                className="w-full text-timer-danger hover:text-timer-danger hover:bg-red-500/10 border-red-500/20"
                 onClick={() => setIsConfirmingDelete(true)}
                 disabled={isPending}
               >
