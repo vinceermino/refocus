@@ -20,6 +20,7 @@ model Profile {
   ownedRooms    Room[]         @relation("RoomOwner")
   memberships   RoomMember[]
   timerSessions TimerSession[]
+  dailyStats    DailyStat[]
 
   @@map("profiles")
 }
@@ -30,6 +31,8 @@ model Room {
   code      String   @unique // Short joinable code (e.g. "ABC123")
   ownerId   String   @map("owner_id") @db.Uuid
   isPublic      Boolean  @default(true) @map("is_public")
+  description   String   @default("")
+  tags          String[] @default([])
   focusDuration Int      @default(1500) @map("focus_duration") // 25 mins
   restDuration  Int      @default(300) @map("rest_duration") // 5 mins
   createdAt     DateTime @default(now()) @map("created_at")
@@ -39,6 +42,7 @@ model Room {
   members RoomMember[]
   timers  Timer[]
 
+  @@index([isPublic, createdAt])
   @@map("rooms")
 }
 
@@ -46,13 +50,17 @@ model RoomMember {
   id        String   @id @default(uuid()) @db.Uuid
   roomId    String   @map("room_id") @db.Uuid
   profileId String   @map("profile_id") @db.Uuid
-  role      String   @default("member") // "owner" | "member"
+  role      String   @default("member") // "owner" | "admin" | "member"
+  status    String   @default("active") // active | pending | kicked | banned
+  lastSeenAt DateTime? @map("last_seen_at")
   joinedAt  DateTime @default(now()) @map("joined_at")
 
   room    Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@unique([roomId, profileId])
+  @@index([profileId, status])
+  @@index([roomId, status, lastSeenAt])
   @@map("room_members")
 }
 
@@ -73,6 +81,7 @@ model Timer {
   room     Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
   sessions TimerSession[]
 
+  @@index([roomId, status])
   @@map("timers")
 }
 
@@ -85,8 +94,20 @@ model TimerSession {
   endedAt   DateTime @map("ended_at")
   createdAt DateTime @default(now()) @map("created_at")
 
-  timer   Timer?   @relation(fields: [timerId], references: [id], onDelete: Cascade)
+  timer   Timer?   @relation(fields: [timerId], references: [id], onDelete: SetNull)
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
+  @@index([profileId, createdAt])
   @@map("timer_sessions")
+}
+
+model DailyStat {
+  profileId    String   @map("profile_id") @db.Uuid
+  day          DateTime @db.Date
+  goalMinutes  Int      @default(120) @map("goal_minutes")
+  focusSeconds Int      @default(0) @map("focus_seconds")
+  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([profileId, day])
+  @@map("daily_stats")
 }

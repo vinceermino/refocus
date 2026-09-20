@@ -36,6 +36,7 @@ interface UserData {
   refreshAll: () => Promise<void>
   refreshRooms: () => Promise<void>
   refreshStats: () => Promise<void>
+  applyStats: (stats: StudyStats) => void
 }
 
 const UserDataContext = createContext<UserData>({
@@ -48,6 +49,7 @@ const UserDataContext = createContext<UserData>({
   refreshAll: async () => { },
   refreshRooms: async () => { },
   refreshStats: async () => { },
+  applyStats: () => { },
 })
 
 export function UserDataProvider({ children, initialData }: { children: ReactNode, initialData?: Partial<UserData> | null }) {
@@ -124,6 +126,14 @@ export function UserDataProvider({ children, initialData }: { children: ReactNod
 
   // Listen for auth changes
   useEffect(() => {
+    if (!profile) return
+    const refresh = () => { if (document.visibilityState === 'visible') void refreshStats() }
+    const interval = window.setInterval(refresh, 60_000)
+    window.addEventListener('focus', refresh)
+    return () => { window.clearInterval(interval); window.removeEventListener('focus', refresh) }
+  }, [profile, refreshStats])
+
+  useEffect(() => {
     const supabase = createClient()
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
@@ -153,6 +163,7 @@ export function UserDataProvider({ children, initialData }: { children: ReactNod
         refreshAll: fetchAll,
         refreshRooms,
         refreshStats,
+        applyStats: setStats,
       }}
     >
       {children}

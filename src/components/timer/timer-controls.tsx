@@ -55,7 +55,7 @@ export function TimerControls({
   if (!isOwner) {
     return (
       <div className="text-center text-sm text-muted-foreground">
-        Waiting for the room owner to control the timer...
+        Waiting for an owner or admin to control the timer...
       </div>
     )
   }

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { getRoomByCode } from '@/actions/rooms'
 import { getActiveTimer } from '@/actions/timer'
 import { StudyRoom } from './study-room'
+import { RoomEntry } from '@/components/room/room-entry'
 
 interface RoomContentProps {
   paramsPromise: Promise<{ code: string }>
@@ -19,21 +20,13 @@ export async function RoomContent({ paramsPromise }: RoomContentProps) {
   const profile = await prisma.profile.findUnique({ where: { userId: user.id } })
   if (!profile) redirect('/login')
 
-  const room = await getRoomByCode(code)
+  const invitation = await prisma.room.findUnique({ where: { code: code.toUpperCase() }, select: { id: true, code: true, name: true, isPublic: true } })
+  if (!invitation) notFound()
+  const membership = await prisma.roomMember.findUnique({ where: { roomId_profileId: { roomId: invitation.id, profileId: profile.id } } })
+  if (membership?.status === 'banned') notFound()
+  if (membership?.status !== 'active') return <RoomEntry room={invitation} />
+  const room = await getRoomByCode(invitation.code)
   if (!room) notFound()
-
-  // Check if user is a member
-  const isMember = room.members.some((m) => m.profile.id === profile.id)
-  if (!isMember) {
-    // Auto-join if public
-    if (room.isPublic) {
-      await prisma.roomMember.create({
-        data: { roomId: room.id, profileId: profile.id, role: 'member' },
-      })
-    } else {
-      notFound()
-    }
-  }
 
   const activeTimer = await getActiveTimer(room.id)
   const isOwner = room.ownerId === profile.id
@@ -57,6 +50,8 @@ export async function RoomContent({ paramsPromise }: RoomContentProps) {
         code: room.code,
         ownerId: room.ownerId,
         isPublic: room.isPublic,
+        description: room.description,
+        tags: room.tags,
         focusDuration: room.focusDuration,
         restDuration: room.restDuration,
       }}
@@ -64,7 +59,8 @@ export async function RoomContent({ paramsPromise }: RoomContentProps) {
         id: profile.id,
         username: profile.username,
       }}
-      isOwner={isOwner}
+      role={isOwner ? 'owner' : membership.role}
+      members={room.members.map(m => ({ id: m.profileId, username: m.profile.username, role: m.role, status: m.status, lastSeenAt: m.lastSeenAt?.toISOString() ?? null }))}
       initialTimer={timerState}
     />
   )

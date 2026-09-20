@@ -3,13 +3,13 @@
 import { DataStatus } from '@/components/layout/data-status'
 import { RoomCard } from '@/components/room/room-card'
 import { DashboardActions } from './dashboard-actions'
-import { Timer, Clock, Loader2 } from 'lucide-react'
+import { Timer, Clock, Loader2, Flame } from 'lucide-react'
 import { formatTime } from '@/lib/utils'
 import { useUserData } from '@/components/providers/user-data-provider'
 import { PersonalTimer } from '@/components/timer/personal-timer'
 
 export default function DashboardPage() {
-  const { profile, rooms, isLoading, isRefreshingStats, error } = useUserData()
+  const { profile, rooms, stats, isLoading, isRefreshingStats, error } = useUserData()
 
   if (isLoading && !profile && !error) {
     return <DashboardSkeleton />
@@ -22,6 +22,7 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold break-words">Hello {profile?.username || "there"}!</h1>
+          {stats && <p title="Consecutive days meeting your focus goal" tabIndex={0} className="mt-2 flex items-center gap-1 text-sm text-muted-foreground"><Flame className="h-4 w-4 text-orange-500" />{stats.currentStreak} {stats.currentStreak === 1 ? 'Day' : 'Days'}</p>}
         </div>
         <DashboardActions />
       </div>

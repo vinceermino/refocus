@@ -8,6 +8,7 @@ import { useUserData } from '@/components/providers/user-data-provider'
 import { useLocalTimer, type TimerState } from '@/hooks/use-local-timer'
 import { useAlarm } from '@/hooks/use-alarm'
 import { toast } from 'sonner'
+import { DailyGoal } from '@/components/timer/daily-goal'
 
 export function PersonalTimer() {
   const { playAlarm, stopAlarm } = useAlarm()
@@ -43,9 +44,10 @@ export function PersonalTimer() {
         }))
 
         if (profile && timerState.mode !== 'rest' && durationToLog > 0) {
-          logPersonalSession(durationToLog).then(() => {
-            refreshStats()
-          }).catch(console.error)
+          logPersonalSession(durationToLog).then(result => {
+            if (result.error) toast.error(result.error)
+            else void refreshStats()
+          }).catch(() => toast.error('Unable to save your session. Please check your connection.'))
         }
       }, 0)
       return () => window.clearTimeout(completion)
@@ -113,9 +115,10 @@ export function PersonalTimer() {
     const totalElapsed = timerState.elapsed + currentRunElapsed
 
     if (profile && timerState.mode !== 'rest' && totalElapsed > 0) {
-      logPersonalSession(totalElapsed).then(() => {
-        refreshStats()
-      }).catch(console.error)
+      logPersonalSession(totalElapsed).then(result => {
+        if (result.error) toast.error(result.error)
+        else void refreshStats()
+      }).catch(() => toast.error('Unable to save your session. Please check your connection.'))
     }
 
     setTimerState(prev => ({
@@ -128,6 +131,7 @@ export function PersonalTimer() {
 
   return (
     <div className="flex flex-col items-center w-full max-w-md mx-auto space-y-10">
+      {profile && <DailyGoal />}
 
       {/* Timer Section */}
       <div className="flex flex-col items-center gap-8 w-full p-4 sm:p-8 rounded-3xl bg-card/80 backdrop-blur-xl border border-border shadow-2xl shadow-accent-glow">

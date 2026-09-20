@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useTheme } from 'next-themes'
-import { Sun, Moon, LogOut, Palette, Timer, BarChart3, Map } from 'lucide-react'
+import { Sun, Moon, LogOut, Palette, Timer, BarChart3, Map, Compass } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAccent } from '@/components/providers/accent-provider'
 import { signOut } from '@/actions/auth'
@@ -33,6 +33,9 @@ export function Navbar({ username }: NavbarProps) {
           </Link>
 
           {/* Analytics link */}
+          <Link href="/discover" aria-label="Discover rooms" aria-current={pathname === '/discover' ? 'page' : undefined} className="flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-lg px-2 text-sm text-muted-foreground hover:text-accent-primary aria-[current=page]:text-accent-primary">
+            <Compass className="h-4 w-4" /><span className="hidden sm:inline">Discover</span>
+          </Link>
           <Link
             href="/dashboard/analytics"
             aria-label="Analytics"

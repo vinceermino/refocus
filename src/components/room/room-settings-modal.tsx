@@ -15,18 +15,23 @@ interface RoomSettingsModalProps {
     id: string
     name: string
     isPublic: boolean
+    description: string
+    tags: string[]
     focusDuration: number
     restDuration: number
   }
+  isOwner: boolean
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function RoomSettingsModal({ room, open, onOpenChange }: RoomSettingsModalProps) {
+export function RoomSettingsModal({ room, isOwner, open, onOpenChange }: RoomSettingsModalProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
   const [name, setName] = useState(room.name)
+  const [description, setDescription] = useState(room.description)
+  const [tags, setTags] = useState(room.tags.join(', '))
   const [isPublic, setIsPublic] = useState(room.isPublic)
   const [focusDurationMinutes, setFocusDurationMinutes] = useState(String(room.focusDuration / 60))
   const [restDurationMinutes, setRestDurationMinutes] = useState(String(room.restDuration / 60))
@@ -46,6 +51,8 @@ export function RoomSettingsModal({ room, open, onOpenChange }: RoomSettingsModa
         const result = await updateRoomSettings(room.id, {
           name,
           isPublic,
+          description,
+          tags: tags.split(',').map(t => t.trim()).filter(Boolean),
           focusDuration: Number(focusDurationMinutes) * 60,
           restDuration: Number(restDurationMinutes) * 60,
         })
@@ -54,6 +61,7 @@ export function RoomSettingsModal({ room, open, onOpenChange }: RoomSettingsModa
         } else {
           toast.success('Room settings updated successfully')
           onOpenChange(false)
+          router.refresh()
         }
       } catch {
         setError('Unable to save your changes. Check your connection and try again.')
@@ -86,6 +94,8 @@ export function RoomSettingsModal({ room, open, onOpenChange }: RoomSettingsModa
       setIsConfirmingDelete(false)
       setName(room.name)
       setIsPublic(room.isPublic)
+      setDescription(room.description)
+      setTags(room.tags.join(', '))
       setFocusDurationMinutes(String(room.focusDuration / 60))
       setRestDurationMinutes(String(room.restDuration / 60))
       setError(null)
@@ -113,6 +123,7 @@ export function RoomSettingsModal({ room, open, onOpenChange }: RoomSettingsModa
               <label htmlFor="room-name" className="text-sm font-medium">Room Name</label>
               <Input
                 id="room-name"
+                maxLength={80}
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -124,10 +135,10 @@ export function RoomSettingsModal({ room, open, onOpenChange }: RoomSettingsModa
             <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/20">
               <div className="space-y-0.5">
                 <label className="text-sm font-medium cursor-pointer" htmlFor="public-toggle">
-                  Public Room
+                  {isPublic ? 'Public (Anyone can join)' : 'Private (Invite only)'}
                 </label>
                 <p className="text-xs text-muted-foreground">
-                  Anyone with the code can join automatically.
+                  {isPublic ? 'Listed in Discover.' : 'Hidden from Discover. Share a code or direct link to invite members.'}
                 </p>
               </div>
               <input
@@ -140,6 +151,12 @@ export function RoomSettingsModal({ room, open, onOpenChange }: RoomSettingsModa
               />
             </div>
 
+            {isPublic && <div className="space-y-3">
+              <label htmlFor="room-description" className="text-sm font-medium">Description</label>
+              <textarea id="room-description" maxLength={500} value={description} onChange={e => setDescription(e.target.value)} disabled={isPending} className="w-full rounded-lg border border-border bg-background p-3 text-sm" rows={3} />
+              <label htmlFor="room-tags" className="text-sm font-medium">Tags (comma separated, up to 8)</label>
+              <Input id="room-tags" value={tags} onChange={e => setTags(e.target.value)} disabled={isPending} placeholder="math, quiet study" />
+            </div>}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label htmlFor="focus-duration" className="text-sm font-medium">Focus Duration (min)</label>
@@ -173,7 +190,7 @@ export function RoomSettingsModal({ room, open, onOpenChange }: RoomSettingsModa
               <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isPending}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isPending || (name === room.name && isPublic === room.isPublic && Number(focusDurationMinutes) * 60 === room.focusDuration && Number(restDurationMinutes) * 60 === room.restDuration)}>
+              <Button type="submit" disabled={isPending || (name === room.name && description === room.description && tags === room.tags.join(', ') && isPublic === room.isPublic && Number(focusDurationMinutes) * 60 === room.focusDuration && Number(restDurationMinutes) * 60 === room.restDuration)}>
                 {isPending ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
@@ -181,7 +198,7 @@ export function RoomSettingsModal({ room, open, onOpenChange }: RoomSettingsModa
           </form>
 
           {/* Danger Zone */}
-          <div className="pt-6 mt-6 border-t border-border/50">
+          {isOwner && <div className="pt-6 mt-6 border-t border-border/50">
             <h3 className="text-sm font-semibold text-timer-danger mb-2 flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
               Danger Zone
@@ -208,7 +225,7 @@ export function RoomSettingsModal({ room, open, onOpenChange }: RoomSettingsModa
                 Delete Room
               </Button>
             )}
-          </div>
+          </div>}
         </div>
       </DialogContent>
     </Dialog>

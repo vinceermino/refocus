@@ -111,7 +111,7 @@ function DailyGoalRing({ used, limit }: { used: number; limit: number }) {
   const strokeDashoffset = circumference * (1 - progress)
 
   const getColor = () => {
-    if (progress >= 1) return 'var(--timer-danger)'
+    if (progress >= 1) return 'var(--timer-running)'
     if (progress >= 0.85) return 'var(--timer-warning)'
     return 'var(--accent-primary)'
   }
@@ -146,8 +146,8 @@ function DailyGoalRing({ used, limit }: { used: number; limit: number }) {
       </div>
       <div className="flex items-center justify-between mt-4 text-xs text-muted-foreground">
         <span>0h</span>
-        <span>Daily Limit: {formatDuration(limit)}</span>
-        <span>8h</span>
+        <span>Daily Goal: {formatDuration(limit)}</span>
+        <span>{formatDuration(limit)}</span>
       </div>
     </div>
   )
@@ -215,7 +215,7 @@ export function AnalyticsDashboard({ stats }: { stats: StudyStats }) {
           icon={Clock}
           label="Today"
           value={formatDuration(stats.todaySeconds)}
-          subValue={`of ${formatDuration(stats.dailyLimit)} limit`}
+          subValue={`of ${formatDuration(stats.goalMinutes * 60)} goal`}
         />
         <StatCard
           icon={Zap}
@@ -239,7 +239,7 @@ export function AnalyticsDashboard({ stats }: { stats: StudyStats }) {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <WeeklyChart data={stats.weeklyData} />
-        <DailyGoalRing used={stats.todaySeconds} limit={stats.dailyLimit} />
+        <DailyGoalRing used={stats.todaySeconds} limit={stats.goalMinutes * 60} />
       </div>
 
       {/* Room Breakdown */}

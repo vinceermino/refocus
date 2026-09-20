@@ -1,199 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
-
-const MAX_DAILY_SECONDS = 8 * 60 * 60
-
-const ROOM_COLORS = [
-  '#6366f1', '#ec4899', '#22c55e', '#f59e0b', '#06b6d4',
-  '#8b5cf6', '#ef4444', '#14b8a6', '#f97316', '#3b82f6',
-]
+import { loadStudyStats } from '@/lib/study-stats'
 
 export async function getUserData() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { error: 'Not authenticated', status: 401 }
-  }
-
+  if (!user) return { error: 'Not authenticated', status: 401 }
   const profile = await prisma.profile.findUnique({ where: { userId: user.id } })
-  if (!profile) {
-    return { error: 'Profile not found', status: 404 }
-  }
-
-  const now = new Date()
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
-  const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)
-  const sevenDaysAgo = new Date(startOfToday)
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
-
-  // Run sequential database queries to avoid exhausting the connection pool
-  // (Supabase free tier can hit P1001 when spawning too many parallel connections)
+  if (!profile) return { error: 'Profile not found', status: 404 }
   const memberships = await prisma.roomMember.findMany({
-    where: { profileId: profile.id },
-    include: {
-      room: {
-        include: {
-          _count: { select: { members: true } },
-          timers: {
-            where: { status: { in: ['running', 'paused'] } },
-            take: 1,
-            orderBy: { createdAt: 'desc' },
-          },
-        },
-      },
-    },
+    where: { profileId: profile.id, status: 'active' },
+    include: { room: { include: {
+      _count: { select: { members: { where: { status: 'active' } } } },
+      timers: { where: { status: { in: ['running', 'paused'] } }, take: 1, orderBy: { createdAt: 'desc' } },
+    } } },
     orderBy: { joinedAt: 'desc' },
   })
-
-  const recentSessions = await prisma.timerSession.findMany({
-    where: {
-      profileId: profile.id,
-      createdAt: { gte: sevenDaysAgo, lte: endOfToday },
-    },
-    select: { duration: true, createdAt: true },
-    orderBy: { createdAt: 'asc' },
-  })
-
-  const totalStats = await prisma.timerSession.aggregate({
-    where: { profileId: profile.id },
-    _sum: { duration: true },
-    _count: true,
-    _avg: { duration: true },
-  })
-
-  const allSessions = await prisma.timerSession.findMany({
-    where: { profileId: profile.id },
-    select: { createdAt: true },
-    orderBy: { createdAt: 'desc' },
-  })
-
-  const roomSessions = await prisma.timerSession.findMany({
-    where: { profileId: profile.id },
-    include: {
-      timer: {
-        include: {
-          room: { select: { name: true } },
-        },
-      },
-    },
-  })
-
-  // --- Rooms ---
-  const rooms = memberships.map((m) => m.room)
-
-  // --- Stats ---
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-  const weeklyData = []
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(startOfToday)
-    d.setDate(d.getDate() - i)
-    const dateStr = d.toISOString().split('T')[0]
-    const daySeconds = recentSessions
-      .filter(s => {
-        const sDate = new Date(s.createdAt)
-        return sDate.getFullYear() === d.getFullYear() &&
-          sDate.getMonth() === d.getMonth() &&
-          sDate.getDate() === d.getDate()
-      })
-      .reduce((sum, s) => sum + s.duration, 0)
-
-    weeklyData.push({
-      date: dayNames[d.getDay()],
-      fullDate: dateStr,
-      seconds: daySeconds,
-    })
-  }
-
-  const todaySeconds = weeklyData[weeklyData.length - 1]?.seconds ?? 0
-  const totalSeconds = totalStats._sum.duration ?? 0
-  const totalSessions = totalStats._count ?? 0
-  const averageSessionSeconds = Math.round(totalStats._avg.duration ?? 0)
-
-  // Streaks
-  const studyDays = new Set<string>()
-  allSessions.forEach(s => {
-    const d = new Date(s.createdAt)
-    studyDays.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)
-  })
-
-  const sortedDays = Array.from(studyDays).sort().reverse()
-  let currentStreak = 0
-  let longestStreak = 0
-
-  if (sortedDays.length > 0) {
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-    const yesterday = new Date(now)
-    yesterday.setDate(yesterday.getDate() - 1)
-    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`
-
-    if (sortedDays[0] === todayStr || sortedDays[0] === yesterdayStr) {
-      const expectedDate = new Date(sortedDays[0])
-      for (const dayStr of sortedDays) {
-        const expStr = `${expectedDate.getFullYear()}-${String(expectedDate.getMonth() + 1).padStart(2, '0')}-${String(expectedDate.getDate()).padStart(2, '0')}`
-        if (dayStr === expStr) {
-          currentStreak++
-          expectedDate.setDate(expectedDate.getDate() - 1)
-        } else {
-          break
-        }
-      }
-    }
-
-    const ascending = Array.from(studyDays).sort()
-    let streak = 1
-    for (let i = 1; i < ascending.length; i++) {
-      const prev = new Date(ascending[i - 1])
-      const curr = new Date(ascending[i])
-      const diffDays = Math.round((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24))
-      if (diffDays === 1) {
-        streak++
-      } else {
-        longestStreak = Math.max(longestStreak, streak)
-        streak = 1
-      }
-    }
-    longestStreak = Math.max(longestStreak, streak)
-  }
-
-  // Room breakdown
-  const roomMap = new Map<string, number>()
-  roomSessions.forEach(s => {
-    const roomName = s.timer?.room?.name ?? 'Personal'
-    roomMap.set(roomName, (roomMap.get(roomName) ?? 0) + s.duration)
-  })
-
-  const roomBreakdown = Array.from(roomMap.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([roomName, seconds], i) => ({
-      roomName,
-      seconds,
-      color: ROOM_COLORS[i % ROOM_COLORS.length],
-    }))
-
-  const stats = {
-    todaySeconds,
-    totalSeconds,
-    totalSessions,
-    averageSessionSeconds,
-    currentStreak,
-    longestStreak,
-    dailyLimit: MAX_DAILY_SECONDS,
-    weeklyData,
-    roomBreakdown,
-  }
-
-  return {
-    data: {
-      profile: {
-        id: profile.id,
-        username: profile.username,
-        genderPref: profile.genderPref,
-        totalStudyTime: profile.totalStudyTime,
-      },
-      rooms,
-      stats,
-    }
-  }
+  const stats = await loadStudyStats(profile.id)
+  return { data: {
+    profile: { id: profile.id, username: profile.username, genderPref: profile.genderPref, totalStudyTime: profile.totalStudyTime },
+    rooms: memberships.map(m => m.room), stats,
+  } }
 }
