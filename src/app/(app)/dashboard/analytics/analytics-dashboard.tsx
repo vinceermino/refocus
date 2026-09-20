@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { ArrowLeft, Clock, Flame, Target, BarChart3, Trophy, Zap } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import type { StudyStats } from '@/actions/stats'
 
 function formatDuration(totalSeconds: number): string {
@@ -46,7 +45,7 @@ function StatCard({ icon: Icon, label, value, subValue, accentColor }: {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">{label}</p>
-          <p className="text-2xl font-bold mt-0.5">{value}</p>
+          <p className="text-2xl font-bold mt-0.5 break-words">{value}</p>
           {subValue && <p className="text-xs text-muted-foreground mt-0.5">{subValue}</p>}
         </div>
       </div>
@@ -112,7 +111,7 @@ function DailyGoalRing({ used, limit }: { used: number; limit: number }) {
   const strokeDashoffset = circumference * (1 - progress)
 
   const getColor = () => {
-    if (progress >= 1) return 'var(--timer-danger)'
+    if (progress >= 1) return 'var(--timer-running)'
     if (progress >= 0.85) return 'var(--timer-warning)'
     return 'var(--accent-primary)'
   }
@@ -147,8 +146,8 @@ function DailyGoalRing({ used, limit }: { used: number; limit: number }) {
       </div>
       <div className="flex items-center justify-between mt-4 text-xs text-muted-foreground">
         <span>0h</span>
-        <span>Daily Limit: {formatDuration(limit)}</span>
-        <span>8h</span>
+        <span>Daily Goal: {formatDuration(limit)}</span>
+        <span>{formatDuration(limit)}</span>
       </div>
     </div>
   )
@@ -201,10 +200,8 @@ export function AnalyticsDashboard({ stats }: { stats: StudyStats }) {
     <div className="max-w-5xl mx-auto px-4 py-8 animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
-        <Link href="/dashboard">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+        <Link href="/dashboard" aria-label="Back to dashboard" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg hover:bg-muted">
+          <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
           <h1 className="text-3xl font-bold">Analytics</h1>
@@ -213,12 +210,12 @@ export function AnalyticsDashboard({ stats }: { stats: StudyStats }) {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           icon={Clock}
           label="Today"
           value={formatDuration(stats.todaySeconds)}
-          subValue={`of ${formatDuration(stats.dailyLimit)} limit`}
+          subValue={`of ${formatDuration(stats.goalMinutes * 60)} goal`}
         />
         <StatCard
           icon={Zap}
@@ -242,7 +239,7 @@ export function AnalyticsDashboard({ stats }: { stats: StudyStats }) {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <WeeklyChart data={stats.weeklyData} />
-        <DailyGoalRing used={stats.todaySeconds} limit={stats.dailyLimit} />
+        <DailyGoalRing used={stats.todaySeconds} limit={stats.goalMinutes * 60} />
       </div>
 
       {/* Room Breakdown */}

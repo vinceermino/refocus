@@ -1,5 +1,6 @@
 'use client'
 
+import { useClock } from '@/hooks/use-clock'
 import { cn, formatTime } from '@/lib/utils'
 
 interface TimerDisplayProps {
@@ -8,7 +9,7 @@ interface TimerDisplayProps {
   isRunning: boolean
   isPaused: boolean
   isComplete: boolean
-  mode: 'countdown' | 'stopwatch'
+  mode: 'countdown' | 'stopwatch' | 'rest'
   dailyRemaining?: number
   dailyUsed?: number
 }
@@ -16,7 +17,7 @@ interface TimerDisplayProps {
 export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, isComplete, mode, dailyRemaining, dailyUsed }: TimerDisplayProps) {
   const radius = 140
   const circumference = 2 * Math.PI * radius
-  const strokeDashoffset = mode === 'countdown'
+  const strokeDashoffset = (mode === 'countdown' || mode === 'rest')
     ? circumference * (1 - progress)
     : 0
 
@@ -25,6 +26,7 @@ export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, is
     if (isComplete) return 'var(--timer-danger)'
     if (isPaused) return 'var(--muted-foreground)'
     if (mode === 'stopwatch') return 'var(--timer-running)'
+    if (mode === 'rest') return 'var(--timer-running)'
     if (progress > 0.85) return 'var(--timer-danger)'
     if (progress > 0.65) return 'var(--timer-warning)'
     return 'var(--timer-running)'
@@ -34,15 +36,21 @@ export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, is
   const dailyProgress = dailyUsed !== undefined ? Math.min(1, dailyUsed / dailyLimit) : 0
   const showDailyQuota = dailyUsed !== undefined
 
+  const now = useClock(isRunning)
+  const endTimeStr = now && isRunning && mode !== 'stopwatch' && displaySeconds > 0
+    ? `Ends at ${new Date(now + displaySeconds * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`
+    : ''
+
   return (
     <div className={cn(
-      'relative flex flex-col items-center justify-center gap-4'
+      'relative flex w-full max-w-[320px] flex-col items-center justify-center gap-4'
     )}>
       <svg
         width="320"
         height="320"
         viewBox="0 0 320 320"
-        className="transform -rotate-90"
+        aria-hidden="true"
+        className="h-auto w-full transform -rotate-90"
       >
         {/* Background circle */}
         <circle
@@ -70,10 +78,10 @@ export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, is
       </svg>
 
       {/* Center content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ bottom: showDailyQuota ? '40px' : '0' }}>
+      <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ aspectRatio: '1 / 1', bottom: 'auto' }}>
         <span
           className={cn(
-            'font-mono text-6xl font-bold tracking-tight transition-colors duration-500 ease-in-out',
+            'font-mono text-[clamp(2.25rem,10vw,3.75rem)] font-bold tracking-tight transition-colors duration-500 ease-in-out',
             isComplete && 'text-timer-danger',
             isPaused && 'text-muted-foreground',
           )}
@@ -81,9 +89,14 @@ export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, is
         >
           {formatTime(displaySeconds)}
         </span>
-        <span className="text-sm text-muted-foreground mt-2 uppercase tracking-widest">
-          {isComplete ? 'Complete!' : isPaused ? 'Paused' : isRunning ? (mode === 'countdown' ? 'Focusing' : 'Studying') : 'Ready'}
+        <span role="status" className="text-sm text-muted-foreground mt-2 uppercase tracking-widest">
+          {isComplete ? 'Complete!' : isPaused ? 'Paused' : isRunning ? (mode === 'countdown' ? 'Focusing' : mode === 'rest' ? 'Resting' : 'Studying') : 'Ready'}
         </span>
+        {endTimeStr && (
+          <span className="text-xs text-muted-foreground mt-1 font-medium bg-muted/50 px-2 py-0.5 rounded-full">
+            {endTimeStr}
+          </span>
+        )}
       </div>
 
       {/* Daily quota indicator */}

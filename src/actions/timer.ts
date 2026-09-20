@@ -1,210 +1,73 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
-import { revalidatePath } from 'next/cache'
+import { getAuthProfile } from '@/lib/auth-profile'
+import { lockRoom, requireRoomRole } from '@/lib/room-access'
+import { MAX_DAILY_SECONDS, utcDay } from '@/lib/focus-goals'
+import { recordFocus } from '@/lib/record-focus'
 
-const MAX_DAILY_SECONDS = 8 * 60 * 60 // 8 hours = 28,800 seconds
-
-async function getAuthProfile() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-  const profile = await prisma.profile.findUnique({ where: { userId: user.id } })
-  if (!profile) throw new Error('Profile not found')
-  return profile
-}
-
-/**
- * Get total study time recorded in TimerSessions for a profile today (UTC-based day).
- */
-async function getDailyStudyTime(profileId: string): Promise<number> {
-  const now = new Date()
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
-  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)
-
-  const result = await prisma.timerSession.aggregate({
-    where: {
-      profileId,
-      createdAt: { gte: startOfDay, lte: endOfDay },
-    },
-    _sum: { duration: true },
-  })
-
-  return result._sum.duration ?? 0
-}
-
-/**
- * Get how many seconds remain in today's 8-hour study budget.
- */
-export async function getRemainingDailyTime(): Promise<{ remaining: number; used: number; limit: number }> {
+export async function getRemainingDailyTime() {
   const profile = await getAuthProfile()
-  const used = await getDailyStudyTime(profile.id)
-  return {
-    remaining: Math.max(0, MAX_DAILY_SECONDS - used),
-    used,
-    limit: MAX_DAILY_SECONDS,
-  }
+  const day = await prisma.dailyStat.findUnique({ where: { profileId_day: { profileId: profile.id, day: utcDay() } } })
+  const used = day?.focusSeconds ?? 0
+  return { used, remaining: Math.max(0, MAX_DAILY_SECONDS - used), limit: MAX_DAILY_SECONDS }
 }
 
-export async function startTimer(roomId: string, duration: number, mode: 'countdown' | 'stopwatch' = 'countdown') {
+export async function startTimer(roomId: string, duration: number, mode: 'countdown' | 'stopwatch' | 'rest' = 'countdown') {
   const profile = await getAuthProfile()
-  const now = new Date()
-
-  // Check daily limit
-  const dailyUsed = await getDailyStudyTime(profile.id)
-  const remaining = MAX_DAILY_SECONDS - dailyUsed
-  if (remaining <= 0) {
-    return { error: 'Daily 8-hour study limit reached. Take a break and come back tomorrow!' }
-  }
-
-  // For countdown, cap the duration to remaining daily time
-  const effectiveDuration = mode === 'countdown' ? Math.min(duration, remaining) : duration
-
-  // Stop any existing running timer in this room
-  await prisma.timer.updateMany({
-    where: { roomId, status: { in: ['running', 'paused'] } },
-    data: { status: 'stopped', endedAt: now },
+  if (!['countdown', 'stopwatch', 'rest'].includes(mode) || !Number.isInteger(duration) || duration < 0 || duration > MAX_DAILY_SECONDS || (mode !== 'stopwatch' && duration === 0)) return { error: 'Invalid timer duration or mode.' }
+  return prisma.$transaction(async tx => {
+    await lockRoom(tx, roomId)
+    await requireRoomRole(roomId, profile.id, true, tx)
+    if (await tx.timer.findFirst({ where: { roomId, status: { in: ['running', 'paused'] } } })) return { error: 'Stop the current session before starting another.' }
+    const daily = await tx.dailyStat.findUnique({ where: { profileId_day: { profileId: profile.id, day: utcDay() } } })
+    const remaining = Math.max(0, MAX_DAILY_SECONDS - (daily?.focusSeconds ?? 0))
+    if (mode !== 'rest' && !remaining) return { error: 'Daily 8-hour study limit reached.' }
+    const timer = await tx.timer.create({ data: { roomId, userId: profile.id, mode, status: 'running', duration: mode === 'countdown' ? Math.min(duration, remaining) : mode === 'stopwatch' ? remaining : duration, startedAt: new Date() } })
+    return { timer, dailyRemaining: remaining }
   })
-
-  const timer = await prisma.timer.create({
-    data: {
-      roomId,
-      userId: profile.id,
-      mode,
-      status: 'running',
-      duration: effectiveDuration,
-      startedAt: now,
-      elapsed: 0,
-    },
-  })
-
-  return { timer, dailyRemaining: remaining }
 }
 
-export async function pauseTimer(timerId: string) {
-  const timer = await prisma.timer.findUnique({ where: { id: timerId } })
-  if (!timer || timer.status !== 'running') return { error: 'Timer is not running' }
-
-  const now = new Date()
-  const additionalElapsed = timer.startedAt
-    ? Math.floor((now.getTime() - timer.startedAt.getTime()) / 1000)
-    : 0
-
-  const updatedTimer = await prisma.timer.update({
-    where: { id: timerId },
-    data: {
-      status: 'paused',
-      pausedAt: now,
-      elapsed: timer.elapsed + additionalElapsed,
-    },
-  })
-
-  return { timer: updatedTimer }
-}
-
-export async function resumeTimer(timerId: string) {
-  const timer = await prisma.timer.findUnique({ where: { id: timerId } })
-  if (!timer || timer.status !== 'paused') return { error: 'Timer is not paused' }
-
-  const now = new Date()
-
-  const updatedTimer = await prisma.timer.update({
-    where: { id: timerId },
-    data: {
-      status: 'running',
-      startedAt: now,
-      pausedAt: null,
-    },
-  })
-
-  return { timer: updatedTimer }
-}
-
-export async function stopTimer(timerId: string) {
+async function changeTimer(timerId: string, action: 'pause' | 'resume' | 'stop') {
   const profile = await getAuthProfile()
-  const timer = await prisma.timer.findUnique({ where: { id: timerId } })
-  if (!timer) return { error: 'Timer not found' }
-
-  const now = new Date()
-  let totalElapsed = timer.elapsed
-
-  if (timer.status === 'running' && timer.startedAt) {
-    totalElapsed += Math.floor((now.getTime() - timer.startedAt.getTime()) / 1000)
-  }
-
-  // Cap to daily remaining budget
-  const dailyUsed = await getDailyStudyTime(profile.id)
-  const dailyRemaining = Math.max(0, MAX_DAILY_SECONDS - dailyUsed)
-  const cappedElapsed = Math.min(totalElapsed, dailyRemaining)
-
-  const updatedTimer = await prisma.timer.update({
-    where: { id: timerId },
-    data: {
-      status: 'stopped',
-      endedAt: now,
-      elapsed: cappedElapsed,
-    },
+  const found = await prisma.timer.findUnique({ where: { id: timerId } })
+  if (!found) return { error: 'Timer not found.' }
+  return prisma.$transaction(async tx => {
+    await lockRoom(tx, found.roomId)
+    await requireRoomRole(found.roomId, profile.id, true, tx)
+    const timer = await tx.timer.findUnique({ where: { id: timerId } })
+    if (!timer) return { error: 'Timer not found.' }
+    if (timer.status === 'stopped') return action === 'stop' ? { timer } : { error: 'Timer is stopped.' }
+    if ((action === 'pause' && timer.status !== 'running') || (action === 'resume' && timer.status !== 'paused')) return { error: 'Timer state changed. Try again.' }
+    const now = new Date()
+    let elapsed = timer.elapsed + (timer.status === 'running' && timer.startedAt ? Math.max(0, Math.floor((now.getTime() - timer.startedAt.getTime()) / 1000)) : 0)
+    elapsed = Math.min(elapsed, timer.mode === 'stopwatch' ? MAX_DAILY_SECONDS : timer.duration)
+    if (action === 'stop' && timer.mode !== 'rest' && elapsed > 0) {
+      // Credit the session's starter, even when another admin stops it.
+      await recordFocus(tx, timer.userId, elapsed, now, timer.id)
+    }
+    const updated = await tx.timer.update({ where: { id: timerId }, data: {
+      status: action === 'pause' ? 'paused' : action === 'resume' ? 'running' : 'stopped',
+      elapsed, startedAt: action === 'resume' ? now : timer.startedAt,
+      pausedAt: action === 'pause' ? now : null, endedAt: action === 'stop' ? now : null,
+    } })
+    return { timer: updated }
   })
-
-  // Record the session for the user
-  if (cappedElapsed > 0) {
-    await prisma.timerSession.create({
-      data: {
-        timerId: timer.id,
-        profileId: profile.id,
-        duration: cappedElapsed,
-        startedAt: timer.createdAt,
-        endedAt: now,
-      },
-    })
-
-    // Update total study time
-    await prisma.profile.update({
-      where: { id: profile.id },
-      data: { totalStudyTime: { increment: cappedElapsed } },
-    })
-  }
-
-  revalidatePath(`/room`)
-  return { timer: updatedTimer }
 }
+
+export async function pauseTimer(timerId: string) { return changeTimer(timerId, 'pause') }
+export async function resumeTimer(timerId: string) { return changeTimer(timerId, 'resume') }
+export async function stopTimer(timerId: string) { return changeTimer(timerId, 'stop') }
 
 export async function getActiveTimer(roomId: string) {
-  return prisma.timer.findFirst({
-    where: {
-      roomId,
-      status: { in: ['running', 'paused'] },
-    },
-    orderBy: { createdAt: 'desc' },
-  })
+  const profile = await getAuthProfile()
+  await requireRoomRole(roomId, profile.id)
+  return prisma.timer.findFirst({ where: { roomId, status: { in: ['running', 'paused'] } }, orderBy: { createdAt: 'desc' } })
 }
 
 export async function logPersonalSession(duration: number) {
   const profile = await getAuthProfile()
-  const now = new Date()
-
-  // Cap to daily remaining budget
-  const dailyUsed = await getDailyStudyTime(profile.id)
-  const dailyRemaining = Math.max(0, MAX_DAILY_SECONDS - dailyUsed)
-  const cappedElapsed = Math.min(duration, dailyRemaining)
-
-  if (cappedElapsed > 0) {
-    const startedAt = new Date(now.getTime() - cappedElapsed * 1000)
-    await prisma.timerSession.create({
-      data: {
-        profileId: profile.id,
-        duration: cappedElapsed,
-        startedAt,
-        endedAt: now,
-      },
-    })
-
-    // Update total study time
-    await prisma.profile.update({
-      where: { id: profile.id },
-      data: { totalStudyTime: { increment: cappedElapsed } },
-    })
-  }
-  return { success: true, duration: cappedElapsed }
+  if (!Number.isSafeInteger(duration) || duration <= 0) return { error: 'Duration must be a positive whole number of seconds.' }
+  const recorded = await prisma.$transaction(tx => recordFocus(tx, profile.id, duration, new Date()))
+  return { success: true, duration: recorded }
 }

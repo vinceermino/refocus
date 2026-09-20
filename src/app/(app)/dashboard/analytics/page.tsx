@@ -1,21 +1,26 @@
 'use client'
 
+import { DataStatus } from '@/components/layout/data-status'
 import { useUserData } from '@/components/providers/user-data-provider'
 import { AnalyticsDashboard } from './analytics-dashboard'
 
 export default function AnalyticsPage() {
-  const { stats, isLoading } = useUserData()
+  const { stats, isLoading, error } = useUserData()
 
-  if (isLoading || !stats) {
+  if (isLoading) {
     return <AnalyticsSkeleton />
   }
 
-  return <AnalyticsDashboard stats={stats} />
+  if (!stats) {
+    return <div className="max-w-5xl mx-auto px-4 py-8"><h1 className="text-3xl font-bold mb-6">Analytics</h1><DataStatus />{!error && <p className="text-muted-foreground">Study data is unavailable. Sign in and try again.</p>}</div>
+  }
+
+  return <>{error && <div className="max-w-5xl mx-auto px-4 pt-8"><DataStatus /></div>}<AnalyticsDashboard stats={stats} /></>
 }
 
 function AnalyticsSkeleton() {
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div role="status" aria-label="Loading analytics" className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-8">
         <div className="h-9 w-9 bg-muted rounded-lg animate-pulse" />
         <div>

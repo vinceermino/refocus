@@ -1,4 +1,3 @@
-import { Navbar } from '@/components/layout/navbar'
 import { AuthNavbar } from './auth-navbar'
 import { UserDataProvider } from '@/components/providers/user-data-provider'
 import { getUserData } from '@/lib/actions/user-data'
@@ -14,7 +13,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen flex flex-col">
       <UserDataProvider initialData={initialData}>
         <AuthNavbar />
-        <main className="flex-1">
+        <main id="main-content" tabIndex={-1} className="flex-1">
           {children}
         </main>
       </UserDataProvider>
