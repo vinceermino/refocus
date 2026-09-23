@@ -50,7 +50,7 @@ export function CreateRoomDialog({ open, onOpenChange }: CreateRoomDialogProps) 
       <DialogContent onClose={() => onOpenChange(false)}>
         <DialogHeader>
           <DialogTitle>Create a Room</DialogTitle>
-          <DialogDescription>Create a shared timer and invite others with its room code.</DialogDescription>
+          <DialogDescription className="minimal-optional">Create a shared timer and invite others with its room code.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} aria-busy={loading} aria-describedby={error ? "create-room-error" : undefined} className="space-y-4">
           <div>

@@ -205,7 +205,7 @@ export function AnalyticsDashboard({ stats }: { stats: StudyStats }) {
         </Link>
         <div>
           <h1 className="text-3xl font-bold">Analytics</h1>
-          <p className="text-sm text-muted-foreground">Your study performance overview</p>
+          <p className="minimal-optional text-sm text-muted-foreground">Your study performance overview</p>
         </div>
       </div>
 

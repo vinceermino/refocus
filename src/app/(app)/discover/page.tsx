@@ -7,6 +7,7 @@ import { joinPublicRoom } from '@/actions/rooms'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useUserData } from '@/components/providers/user-data-provider'
+import { MinimalModeText } from '@/components/layout/minimal-mode-text'
 
 interface PublicRoom { id: string; name: string; description: string; tags: string[]; _count: { members: number } }
 
@@ -40,9 +41,11 @@ export default function DiscoverPage() {
   }, [search, page])
 
   return <div className="max-w-4xl mx-auto px-4 py-8">
-    <h1 className="flex items-center gap-2 text-3xl font-bold"><Compass className="h-7 w-7 text-accent-primary" />Discover rooms</h1>
-    <p className="mt-2 mb-6 text-muted-foreground">Find a public room and focus together.</p>
-    <label htmlFor="room-search" className="mb-2 flex items-center gap-2 text-sm font-medium"><Search className="h-4 w-4" />Search by room name or tag</label>
+    <div className="mb-6">
+      <h1 className="flex items-center gap-2 text-3xl font-bold"><Compass className="h-7 w-7 text-accent-primary" />Discover rooms</h1>
+      <p className="minimal-optional mt-2 text-muted-foreground">Find a public room and focus together.</p>
+    </div>
+    <label htmlFor="room-search" className="mb-2 flex items-center gap-2 text-sm font-medium"><Search className="h-4 w-4" /><MinimalModeText short="Search rooms">Search by room name or tag</MinimalModeText></label>
     <Input id="room-search" type="search" maxLength={80} value={search} onChange={e => { setSearch(e.target.value); setPage(0) }} placeholder="Try math or quiet study" />
     {error && <p role="alert" className="my-4 text-timer-danger">{error}</p>}
     {rooms === null ? <p role="status" className="py-8">Loading public rooms…</p> : !rooms.length && !error ? <p role="status" className="py-8 text-muted-foreground">No public rooms match your search.</p> : null}

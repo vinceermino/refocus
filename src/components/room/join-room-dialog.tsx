@@ -50,7 +50,7 @@ export function JoinRoomDialog({ open, onOpenChange }: JoinRoomDialogProps) {
       <DialogContent onClose={() => onOpenChange(false)}>
         <DialogHeader>
           <DialogTitle>Join Study Room</DialogTitle>
-          <DialogDescription>Enter a room code to join your study partners.</DialogDescription>
+          <DialogDescription className="minimal-optional">Enter a room code to join your study partners.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} aria-busy={loading} aria-describedby={error ? "join-room-error" : undefined} className="space-y-4">
           <div>

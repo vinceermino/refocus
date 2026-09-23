@@ -1,6 +1,6 @@
 # Re-Focus
 
-A personal and shared study timer with focus, rest and stopwatch modes, study analytics, and mathematics roadmaps.
+A personal and shared study timer with focus, rest and stopwatch modes, study analytics, and study notes.
 
 Built with Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4, Supabase Auth/Realtime and Prisma/PostgreSQL. Inter supplies body typography; Indie Flower supplies the branding.
 
@@ -13,7 +13,7 @@ npm ci
 npm run dev
 ```
 
-Open http://localhost:3000. Installation generates the Prisma client. The guest timer works at `/`; shared rooms and recorded study data use authenticated profiles. Roadmap checklist and accent preferences are stored in the current browser.
+Open http://localhost:3000. Installation generates the Prisma client. The guest timer works at `/`; shared rooms and recorded study data use authenticated profiles. Accent and minimal-mode preferences are stored in the current browser.
 
 ## Commands
 
@@ -69,7 +69,7 @@ Study rooms now include a Notes panel with personal notes by default and an opti
 
 Avatars and displayed names link to `/profile/:userId`. Here `userId` means the existing application **Profile.id**, the same ID used by room membership, rather than the Supabase auth ID. Existing initial-based avatars are reused. Profiles show the username, join date and a public plain-text note of up to 300 characters. **Edit profile** opens the note/bio editor; username/avatar editing is outside this feature. An empty profile note deletes it. Visitors see read-only profile notes; the server limits editing to the owner. Group activity and recent study notes are restricted to rooms the viewer currently belongs to, even when those rooms are public. Other viewers never see personal notes, private invitation codes or unrelated memberships. A profile shows at most the latest 50 accessible notes. Deleting a room cascades its notes, consistent with the room's existing dependent data.
 
-The header's **Minimal mode** button persists `refocus-minimal-mode` in browser storage, including across tabs. It reduces accent colors and shadows, hides supplementary dashboard stats and decoration, and adds whitespace. The study-room sidebar becomes a simple member section below the timer so profile navigation, membership controls, room settings, daily goals, timers and notes remain accessible. The existing light/dark preference remains independent. Reduced-motion preferences are respected.
+The header's **Minimal mode** button persists `refocus-minimal-mode` in browser storage, including across tabs. It reduces accent colors and shadows, hides supplementary dashboard stats, helper copy and decoration, and shortens labels and prompts. Navigation uses labeled icons, while controls, errors, note visibility and confirmation details stay available. Turning it off restores the full text. The study-room sidebar becomes a simple member section below the timer so profile navigation, membership controls, room settings, daily goals, timers and notes remain accessible. The existing light/dark preference remains independent. Reduced-motion preferences are respected.
 
 API routes (all responses use `private, no-store`):
 

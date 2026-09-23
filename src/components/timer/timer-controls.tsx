@@ -11,6 +11,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
+import { MinimalModeText } from '@/components/layout/minimal-mode-text'
 
 interface TimerControlsProps {
   isRunning: boolean
@@ -55,7 +56,7 @@ export function TimerControls({
   if (!isOwner) {
     return (
       <div className="text-center text-sm text-muted-foreground">
-        Waiting for an owner or admin to control the timer...
+        <MinimalModeText short="Owner or admin controls the timer.">Waiting for an owner or admin to control the timer...</MinimalModeText>
       </div>
     )
   }
@@ -117,7 +118,7 @@ export function TimerControls({
       {!isActive && (mode === 'countdown' || mode === 'rest') && (
         <div className="flex flex-col items-center gap-2">
           <label className="text-sm font-medium text-muted-foreground">
-            {mode === 'rest' ? 'Rest Duration (minutes)' : 'Focus Duration (minutes)'}
+            <MinimalModeText short="Duration (min)">{mode === 'rest' ? 'Rest Duration (minutes)' : 'Focus Duration (minutes)'}</MinimalModeText>
           </label>
           <div className="flex flex-wrap justify-center gap-2">
             {PRESETS.map((preset) => (
@@ -180,7 +181,9 @@ export function TimerControls({
           <DialogHeader>
             <DialogTitle>Stop Timer?</DialogTitle>
             <DialogDescription>
-              Are you sure you want to stop the timer? This will end your current session. Signed-in focus sessions are recorded; rest sessions are not counted as study time.
+              <MinimalModeText short="End this session? Signed-in focus time is saved; rest is excluded.">
+                Are you sure you want to stop the timer? This will end your current session. Signed-in focus sessions are recorded; rest sessions are not counted as study time.
+              </MinimalModeText>
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-3 mt-6">

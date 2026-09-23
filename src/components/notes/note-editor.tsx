@@ -3,6 +3,7 @@
 import { useId, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { noteText, type NoteVisibility } from '@/lib/note-validation'
+import { MinimalModeText } from '@/components/layout/minimal-mode-text'
 
 export function NoteEditor({ initialContent = '', initialVisibility = 'personal', limit, label = 'Note', submitLabel, allowEmpty = false, share = false, onSave, onCancel }: {
   initialContent?: string; initialVisibility?: NoteVisibility; limit: number; label?: string; submitLabel: string
@@ -32,10 +33,10 @@ export function NoteEditor({ initialContent = '', initialVisibility = 'personal'
     <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
       {share ? <label className="flex min-h-10 cursor-pointer items-center gap-2 text-sm text-foreground">
         <input type="checkbox" checked={visibility === 'group'} disabled={pending} onChange={event => setVisibility(event.target.checked ? 'group' : 'personal')} className="h-4 w-4 accent-accent-primary" />Share with group
-      </label> : <span>Plain text</span>}
+      </label> : <span className="minimal-optional">Plain text</span>}
       <span id={`${id}-count`}>{content.length}/{limit} characters</span>
     </div>
-    {share && <p className="text-xs text-muted-foreground">{visibility === 'personal' ? 'Only you can see this note.' : 'All active members of this room can see this note.'}</p>}
+    {share && <p className="text-xs text-muted-foreground"><MinimalModeText short={visibility === 'personal' ? 'Only you' : 'Visible to room members'}>{visibility === 'personal' ? 'Only you can see this note.' : 'All active members of this room can see this note.'}</MinimalModeText></p>}
     {error && <p id={`${id}-error`} role="alert" className="text-sm text-timer-danger">{error}</p>}
     <div className="flex flex-wrap gap-2">
       <Button type="submit" disabled={pending || (!allowEmpty && !content.trim())}>{pending ? 'Saving…' : submitLabel}</Button>

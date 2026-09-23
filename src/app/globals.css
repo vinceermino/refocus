@@ -218,6 +218,8 @@ body, nav, main, article, section, .study-room-layout, .study-room-members {
   --accent-glow: transparent;
 }
 
+.minimal-only { display: none; }
+[data-minimal="true"] .minimal-only { display: inline; }
 [data-minimal="true"] .minimal-optional { display: none; }
 [data-minimal="true"] main { padding-block: 1rem; }
 [data-minimal="true"] .study-room-layout { grid-template-columns: minmax(0, 1fr); gap: 3rem; }

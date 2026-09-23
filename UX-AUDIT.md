@@ -1,5 +1,7 @@
 # Re-Focus UX/UI review
 
+This is a historical audit. The roadmap pages, checklist and navigation have since been removed. Minimal mode now also hides helper copy and uses shorter labels and prompts; see README.md for current behavior.
+
 ## 1. Codebase Analysis
 
 - TypeScript (strict), React 19.2.8, Next.js 16.3.5 App Router; npm/package-lock.json. Next dev/build use Turbopack; PostCSS compiles Tailwind 4. Cache Components are enabled. Local Next guides were reviewed before implementation.

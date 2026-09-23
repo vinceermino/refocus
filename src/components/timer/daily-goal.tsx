@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatTime } from '@/lib/utils'
+import { MinimalModeText } from '@/components/layout/minimal-mode-text'
 
 export function DailyGoal() {
   const { stats, applyStats } = useUserData()
@@ -19,7 +20,7 @@ export function DailyGoal() {
   const percent = Math.min(100, stats.todaySeconds / (stats.goalMinutes * 60) * 100)
   return <section className="w-full rounded-xl border border-border bg-card p-4" aria-label="Daily focus goal">
     <div className="flex items-center justify-between gap-2">
-      <h2 className="text-sm font-semibold">Today’s focus goal</h2>
+      <h2 className="text-sm font-semibold"><MinimalModeText short="Daily goal">Today’s focus goal</MinimalModeText></h2>
       <Button variant="ghost" size="sm" aria-label="Edit daily focus goal" onClick={() => { setMinutes(String(stats.goalMinutes)); setError(''); setOpen(true) }}><Pencil className="h-3 w-3" />Edit</Button>
     </div>
     <div className="my-2 flex justify-between text-xs text-muted-foreground"><span>{formatTime(stats.todaySeconds)} / {formatTime(stats.goalMinutes * 60)}</span><span>{Math.round(percent)}%</span></div>
@@ -28,10 +29,10 @@ export function DailyGoal() {
     </div>
     <div className="mt-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
       <span title="Consecutive days meeting your focus goal" tabIndex={0} className="flex items-center gap-1"><Flame className="h-4 w-4 text-orange-500" />{stats.currentStreak} {stats.currentStreak === 1 ? 'Day' : 'Days'}</span>
-      <span>{percent >= 100 ? 'Goal achieved!' : 'Saved focus time · UTC day'}</span>
+      <span>{percent >= 100 ? 'Goal achieved!' : <MinimalModeText short="UTC day">Saved focus time · UTC day</MinimalModeText>}</span>
     </div>
     <Dialog open={open} onOpenChange={setOpen}><DialogContent onClose={() => setOpen(false)}>
-      <DialogHeader><DialogTitle>Edit today’s focus goal</DialogTitle><DialogDescription>Choose 1–480 minutes for today (UTC). Tomorrow starts with a 120-minute goal. The study limit remains 8 hours.</DialogDescription></DialogHeader>
+      <DialogHeader><DialogTitle><MinimalModeText short="Edit daily goal">Edit today’s focus goal</MinimalModeText></DialogTitle><DialogDescription><MinimalModeText short="1–480 min today (UTC). Resets to 120 tomorrow. Study limit: 8h.">Choose 1–480 minutes for today (UTC). Tomorrow starts with a 120-minute goal. The study limit remains 8 hours.</MinimalModeText></DialogDescription></DialogHeader>
       <form className="space-y-4" onSubmit={event => {
         event.preventDefault()
         startTransition(async () => {

@@ -8,6 +8,7 @@ import { formatTime } from '@/lib/utils'
 import { useUserData } from '@/components/providers/user-data-provider'
 import { PersonalTimer } from '@/components/timer/personal-timer'
 import { ProfileLink } from '@/components/profile/profile-link'
+import { MinimalModeText } from '@/components/layout/minimal-mode-text'
 
 export default function DashboardPage() {
   const { profile, rooms, stats, isLoading, isRefreshingStats, error } = useUserData()
@@ -22,8 +23,8 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold break-words">Hello {profile ? <ProfileLink userId={profile.id} username={profile.username} /> : 'there'}!</h1>
-          {stats && <p title="Consecutive days meeting your focus goal" tabIndex={0} className="mt-2 flex items-center gap-1 text-sm text-muted-foreground"><Flame className="h-4 w-4 text-orange-500" />{stats.currentStreak} {stats.currentStreak === 1 ? 'Day' : 'Days'}</p>}
+          <h1 className="text-2xl sm:text-3xl font-bold break-words"><MinimalModeText short="Dashboard">Hello {profile ? <ProfileLink userId={profile.id} username={profile.username} /> : 'there'}!</MinimalModeText></h1>
+          {stats && <p title="Consecutive days meeting your focus goal" tabIndex={0} className="minimal-optional mt-2 flex items-center gap-1 text-sm text-muted-foreground"><Flame className="h-4 w-4 text-orange-500" />{stats.currentStreak} {stats.currentStreak === 1 ? 'Day' : 'Days'}</p>}
         </div>
         <DashboardActions />
       </div>
@@ -75,7 +76,7 @@ export default function DashboardPage() {
           {rooms.length === 0 ? (
             <div className="text-center py-12 border border-dashed border-border rounded-xl">
               <Timer className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No rooms yet. Create or join one to get started!</p>
+              <p className="text-muted-foreground"><MinimalModeText short="No rooms yet.">No rooms yet. Create or join one to get started!</MinimalModeText></p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -103,7 +104,7 @@ function DashboardSkeleton() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="minimal-optional grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="p-4 rounded-xl border border-border bg-card">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
             <Clock className="h-4 w-4" />

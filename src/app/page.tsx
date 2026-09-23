@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { PersonalTimer } from '@/components/timer/personal-timer'
 import { MinimalModeToggle } from '@/components/layout/minimal-mode-toggle'
+import { MinimalModeText } from '@/components/layout/minimal-mode-text'
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -53,7 +54,7 @@ export default async function HomePage() {
               href="/signup"
               className="px-8 py-3 rounded-full bg-accent-primary text-primary-foreground font-semibold hover:bg-accent-primary/90 transition-all shadow-lg hover:shadow-accent-primary/25 hover:-translate-y-0.5 active:translate-y-0"
             >
-              Get Started for Free
+              <MinimalModeText short="Sign up">Get Started for Free</MinimalModeText>
             </Link>
           </div>
         </div>

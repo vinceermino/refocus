@@ -111,7 +111,7 @@ export function RoomSettingsModal({ room, isOwner, open, onOpenChange }: RoomSet
             <Settings className="w-5 h-5" />
             Room Settings
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="minimal-optional">
             Update your room details or manage its lifecycle.
           </DialogDescription>
         </DialogHeader>

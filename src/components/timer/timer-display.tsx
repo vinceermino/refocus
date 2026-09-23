@@ -93,7 +93,7 @@ export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, is
           {isComplete ? 'Complete!' : isPaused ? 'Paused' : isRunning ? (mode === 'countdown' ? 'Focusing' : mode === 'rest' ? 'Resting' : 'Studying') : 'Ready'}
         </span>
         {endTimeStr && (
-          <span className="text-xs text-muted-foreground mt-1 font-medium bg-muted/50 px-2 py-0.5 rounded-full">
+          <span className="minimal-optional text-xs text-muted-foreground mt-1 font-medium bg-muted/50 px-2 py-0.5 rounded-full">
             {endTimeStr}
           </span>
         )}

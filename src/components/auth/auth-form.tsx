@@ -45,7 +45,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         <h1 className="text-2xl font-semibold">
           {mode === 'login' ? 'Welcome Back' : 'Join Re-Focus'}
         </h1>
-        <CardDescription>
+        <CardDescription className="minimal-optional">
           {mode === 'login' ? 'Sign in to your account' : 'Create an account to start studying'}
         </CardDescription>
       </CardHeader>
@@ -89,7 +89,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                     )}
                   >
                     <span className="font-medium">{opt.label}</span>
-                    <span className="text-xs text-muted-foreground">{opt.desc}</span>
+                    <span className="minimal-optional text-xs text-muted-foreground">{opt.desc}</span>
                   </button>
                 ))}
               </div>
@@ -103,9 +103,9 @@ export function AuthForm({ mode }: AuthFormProps) {
           </Button>
           <p className="text-sm text-muted-foreground text-center">
             {mode === 'login' ? (
-              <>Don&apos;t have an account?{' '}<Link href="/signup" className="text-accent-primary hover:underline">Sign up</Link></>
+              <><span className="minimal-optional">Don&apos;t have an account? </span><Link href="/signup" className="text-accent-primary hover:underline">Sign up</Link></>
             ) : (
-              <>Already have an account?{' '}<Link href="/login" className="text-accent-primary hover:underline">Sign in</Link></>
+              <><span className="minimal-optional">Already have an account? </span><Link href="/login" className="text-accent-primary hover:underline">Sign in</Link></>
             )}
           </p>
         </CardFooter>

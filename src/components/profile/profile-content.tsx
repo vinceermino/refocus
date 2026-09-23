@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { NoteEditor } from '@/components/notes/note-editor'
 import { NoteCard } from '@/components/notes/note-card'
+import { MinimalModeText } from '@/components/layout/minimal-mode-text'
 
 export function ProfileContent({ userId }: { userId: string }) {
   const { data, error, isLoading, refresh } = useApiResource<{ profile: PublicProfile }>(`/api/users/${encodeURIComponent(userId)}`)
@@ -38,7 +39,7 @@ export function ProfileContent({ userId }: { userId: string }) {
           {profile.isOwner && <Button variant="outline" onClick={() => setEditing(true)}>Edit profile</Button>}
         </div>
         <div className="space-y-3"><h2 className="text-lg font-semibold">Note</h2>
-          <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-muted-foreground">{profile.profileNote || (profile.isOwner ? 'Add a short note about yourself or what you’re studying.' : 'No profile note yet.')}</p>
+          <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-muted-foreground">{profile.profileNote || <MinimalModeText short="No profile note yet.">{profile.isOwner ? 'Add a short note about yourself or what you’re studying.' : 'No profile note yet.'}</MinimalModeText>}</p>
           {profile.isOwner && <div className="flex flex-wrap items-center gap-2">
             <Button onClick={() => setEditing(true)}>{profile.profileNote ? 'Edit note' : 'Add note'}</Button>
             {profile.profileNote && (deleting ? <>
@@ -53,14 +54,14 @@ export function ProfileContent({ userId }: { userId: string }) {
         </div>
       </section>
       <section className="space-y-4"><h2 className="text-xl font-semibold">Group study activity</h2>
-        <p className="text-sm text-muted-foreground">{profile.isOwner ? 'Your current study rooms.' : 'Study rooms you both belong to.'}</p>
+        <p className="minimal-optional text-sm text-muted-foreground">{profile.isOwner ? 'Your current study rooms.' : 'Study rooms you both belong to.'}</p>
         {profile.activity.length ? <ul className="space-y-3">{profile.activity.map(item => <li key={item.room.id} className="rounded-xl border border-border p-4"><Link href={`/room/${item.room.code}`} className="font-medium text-accent-primary hover:underline break-words">{item.room.name}</Link><p className="mt-1 text-xs text-muted-foreground">{item.role} · Joined {new Date(item.joinedAt).toLocaleDateString()}</p></li>)}</ul> : <p className="text-sm text-muted-foreground">No group study activity to show.</p>}
       </section>
-      <section className="space-y-4"><h2 className="text-xl font-semibold">Recent study notes</h2><p className="text-sm text-muted-foreground">{profile.isOwner ? 'Your latest notes from rooms you belong to.' : 'Shared notes from rooms you both belong to.'}</p>
+      <section className="space-y-4"><h2 className="text-xl font-semibold">Recent study notes</h2><p className="minimal-optional text-sm text-muted-foreground">{profile.isOwner ? 'Your latest notes from rooms you belong to.' : 'Shared notes from rooms you both belong to.'}</p>
         {profile.notes.length ? profile.notes.map(note => <NoteCard key={note.id} note={note} canEdit={profile.isOwner} onChange={refresh} />) : <p className="text-sm text-muted-foreground">No study notes to show.</p>}
       </section>
       {profile.isOwner && <Dialog open={editing} onOpenChange={setEditing}><DialogContent onClose={() => setEditing(false)}>
-        <DialogHeader><DialogTitle>Edit profile</DialogTitle><DialogDescription>Your profile note is visible to everyone who visits your profile.</DialogDescription></DialogHeader>
+        <DialogHeader><DialogTitle>Edit profile</DialogTitle><DialogDescription><MinimalModeText short="Your profile note is public.">Your profile note is visible to everyone who visits your profile.</MinimalModeText></DialogDescription></DialogHeader>
         <NoteEditor initialContent={profile.profileNote} limit={PROFILE_NOTE_LIMIT} allowEmpty label="Profile note / bio" submitLabel="Save note" onCancel={() => setEditing(false)} onSave={save} />
       </DialogContent></Dialog>}
     </>}
