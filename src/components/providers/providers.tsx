@@ -2,6 +2,7 @@
 
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { AccentProvider } from "./accent-provider";
+import { MinimalModeProvider } from "./minimal-mode-provider";
 import type { ReactNode } from "react";
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -13,7 +14,7 @@ export function Providers({ children }: { children: ReactNode }) {
       disableTransitionOnChange
     >
       <AccentProvider>
-        {children}
+        <MinimalModeProvider>{children}</MinimalModeProvider>
       </AccentProvider>
     </NextThemesProvider>
   );

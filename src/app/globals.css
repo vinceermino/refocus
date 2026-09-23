@@ -201,6 +201,33 @@ body {
 
 main:focus { outline: none; }
 
+/* Minimal mode changes presentation without hiding timer, note or room actions. */
+body, nav, main, article, section, .study-room-layout, .study-room-members {
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, padding 200ms ease, gap 200ms ease;
+}
+
+:root[data-minimal="true"] {
+  --accent-primary: #334155;
+  --accent-primary-soft: #f1f5f9;
+  --accent-glow: transparent;
+}
+
+:root.dark[data-minimal="true"] {
+  --accent-primary: #cbd5e1;
+  --accent-primary-soft: #1e293b;
+  --accent-glow: transparent;
+}
+
+[data-minimal="true"] .minimal-optional { display: none; }
+[data-minimal="true"] main { padding-block: 1rem; }
+[data-minimal="true"] .study-room-layout { grid-template-columns: minmax(0, 1fr); gap: 3rem; }
+[data-minimal="true"] .study-room-members { background: transparent; padding: 1.5rem; }
+[data-minimal="true"] .study-room-members ul { display: flex; flex-wrap: wrap; gap: 1rem; }
+[data-minimal="true"] .study-room-members li { flex: 1 1 240px; }
+[data-minimal="true"] :is(.shadow-sm, .shadow-lg, .shadow-xl, .animate-pulse-glow) { box-shadow: none; }
+[data-minimal="true"] :is(.animate-pulse-glow, .animate-ping) { animation: none; }
+[data-minimal="true"] [class*="bg-gradient"] { background-image: none; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

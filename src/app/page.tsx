@@ -3,6 +3,7 @@ import { Heart } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { PersonalTimer } from '@/components/timer/personal-timer'
+import { MinimalModeToggle } from '@/components/layout/minimal-mode-toggle'
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -22,6 +23,7 @@ export default async function HomePage() {
             <span className="font-handwriting font-bold text-2xl tracking-tight">Re-Focus</span>
           </div>
           <div className="flex items-center gap-3">
+            <MinimalModeToggle />
             <Link
               href="/login"
               className="text-sm font-medium text-muted-foreground hover:text-accent-primary transition-colors px-3 py-2"
@@ -38,10 +40,10 @@ export default async function HomePage() {
 
         {/* About the App */}
         <div className="max-w-2xl mx-auto text-center space-y-6 animate-fade-in">
-          <h2 className="text-3xl font-bold text-accent-primary">
+          <h2 className="minimal-optional text-3xl font-bold text-accent-primary">
             Study Together, Grow Together
           </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed">
+          <p className="minimal-optional text-lg text-muted-foreground leading-relaxed">
             Re-Focus is the perfect companion for student couples who want to stay motivated. 
             Use the personal timer for deep-focus solo sessions, or create private study rooms to record 
             and share your focused hours together. Support each other&apos;s academic goals, one hour at a time.

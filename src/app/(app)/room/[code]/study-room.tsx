@@ -17,6 +17,7 @@ import { useAlarm } from '@/hooks/use-alarm'
 import { startTimer, pauseTimer, resumeTimer, stopTimer, getRemainingDailyTime } from '@/actions/timer'
 import { Button } from '@/components/ui/button'
 import { MAX_DAILY_SECONDS } from '@/lib/focus-goals'
+import { GroupNotes } from '@/components/notes/group-notes'
 
 interface StudyRoomProps {
   room: {
@@ -277,7 +278,7 @@ export function StudyRoom({ room: initialRoom, currentUser, role: initialRole, m
       </div>
 
       {/* Main content */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8">
+      <div className="study-room-layout grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8">
         {/* Timer section */}
         <div className="flex flex-col items-center gap-8">
           <TimerDisplay
@@ -308,10 +309,12 @@ export function StudyRoom({ room: initialRoom, currentUser, role: initialRole, m
         </div>
 
         {/* Sidebar */}
-        <div className="border border-border rounded-xl p-4 bg-card h-fit">
+        <div className="study-room-members border border-border rounded-xl p-4 bg-card h-fit">
           <MemberList members={members} roomId={room.id} currentUserId={currentUser.id} role={role} onChange={() => { void refreshRoom() }} />
         </div>
       </div>
+
+      <GroupNotes key={room.id} roomId={room.id} currentUserId={currentUser.id} />
 
       {canManage && (
         <RoomSettingsModal

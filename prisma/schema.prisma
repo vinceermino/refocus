@@ -12,6 +12,7 @@ model Profile {
   id             String   @id @default(uuid()) @db.Uuid
   userId         String   @unique @map("user_id") // Supabase Auth user ID
   username       String   @unique
+  profileNote    String   @default("") @map("profile_note") @db.VarChar(300)
   genderPref     String   @default("neutral") @map("gender_pref") // "he" | "she" | "neutral"
   totalStudyTime Int      @default(0) @map("total_study_time") // Accumulated seconds
   createdAt      DateTime @default(now()) @map("created_at")
@@ -21,6 +22,7 @@ model Profile {
   memberships   RoomMember[]
   timerSessions TimerSession[]
   dailyStats    DailyStat[]
+  notes         GroupStudyNote[]
 
   @@map("profiles")
 }
@@ -41,6 +43,7 @@ model Room {
   owner   Profile      @relation("RoomOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   members RoomMember[]
   timers  Timer[]
+  notes   GroupStudyNote[]
 
   @@index([isPublic, createdAt])
   @@map("rooms")
@@ -110,4 +113,21 @@ model DailyStat {
 
   @@id([profileId, day])
   @@map("daily_stats")
+}
+
+model GroupStudyNote {
+  id           String   @id @default(uuid()) @db.Uuid
+  authorId     String   @map("author_id") @db.Uuid
+  groupStudyId String   @map("group_study_id") @db.Uuid
+  content      String   @db.VarChar(500)
+  visibility   String   @default("personal") // personal | group
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  author     Profile @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  groupStudy Room    @relation(fields: [groupStudyId], references: [id], onDelete: Cascade)
+
+  @@index([groupStudyId, createdAt])
+  @@index([authorId, createdAt])
+  @@map("group_study_notes")
 }

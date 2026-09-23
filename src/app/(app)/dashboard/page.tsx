@@ -7,6 +7,7 @@ import { Timer, Clock, Loader2, Flame } from 'lucide-react'
 import { formatTime } from '@/lib/utils'
 import { useUserData } from '@/components/providers/user-data-provider'
 import { PersonalTimer } from '@/components/timer/personal-timer'
+import { ProfileLink } from '@/components/profile/profile-link'
 
 export default function DashboardPage() {
   const { profile, rooms, stats, isLoading, isRefreshingStats, error } = useUserData()
@@ -21,7 +22,7 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold break-words">Hello {profile?.username || "there"}!</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold break-words">Hello {profile ? <ProfileLink userId={profile.id} username={profile.username} /> : 'there'}!</h1>
           {stats && <p title="Consecutive days meeting your focus goal" tabIndex={0} className="mt-2 flex items-center gap-1 text-sm text-muted-foreground"><Flame className="h-4 w-4 text-orange-500" />{stats.currentStreak} {stats.currentStreak === 1 ? 'Day' : 'Days'}</p>}
         </div>
         <DashboardActions />
@@ -34,7 +35,7 @@ export default function DashboardPage() {
 
       {/* Stats */}
       {(!error || profile) && <>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="minimal-optional grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div className="p-4 rounded-xl border border-border bg-card">
             <div className="flex items-center gap-2 text-muted-foreground mb-1">
               <Clock className="h-4 w-4" />

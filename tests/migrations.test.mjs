@@ -6,6 +6,7 @@ import { loadSource } from './load-source.mjs'
 
 const baseline = fs.readFileSync('prisma/migrations/00000000000000_baseline/migration.sql', 'utf8')
 const feature = fs.readFileSync('prisma/migrations/20260920000000_focus_goals_room_controls/migration.sql', 'utf8')
+const notesFeature = fs.readFileSync('prisma/migrations/20260923000000_notes_profiles/migration.sql', 'utf8')
 const owner = '00000000-0000-4000-8000-000000000001'
 const member = '00000000-0000-4000-8000-000000000002'
 const room = '00000000-0000-4000-8000-000000000003'
@@ -31,6 +32,18 @@ test('PostgreSQL migrations support existing data, preserve history and block Da
       (gen_random_uuid(), '${timer}', '${owner}', 1800, '2026-09-20 00:00', '2026-09-20 00:30', '2026-09-20 00:30');
   `)
   await db.exec(feature)
+  await db.exec(notesFeature)
+
+  await t.test('notes migration preserves existing profiles and enforces note constraints and defaults', async () => {
+    assert.equal((await db.query('SELECT profile_note FROM profiles WHERE id = $1', [owner])).rows[0].profile_note, '')
+    await db.query('UPDATE profiles SET profile_note = $1 WHERE id = $2', ['A'.repeat(300), owner])
+    await assert.rejects(db.query('UPDATE profiles SET profile_note = $1 WHERE id = $2', ['A'.repeat(301), owner]), /too long/)
+    await db.query('INSERT INTO group_study_notes (id, author_id, group_study_id, content, updated_at) VALUES (gen_random_uuid(), $1, $2, $3, now())', [owner, room, 'A'.repeat(500)])
+    assert.equal((await db.query('SELECT visibility FROM group_study_notes')).rows[0].visibility, 'personal')
+    await assert.rejects(db.query('UPDATE group_study_notes SET content = $1', ['A'.repeat(501)]), /too long/)
+    await assert.rejects(db.query("UPDATE group_study_notes SET content = '   '"), /content_check/)
+    await assert.rejects(db.query("UPDATE group_study_notes SET visibility = 'public'"), /visibility_check/)
+  })
 
   await t.test('historical focus is grouped by recorded UTC day and gets a default goal', async () => {
     const { rows } = await db.query('SELECT day::text, goal_minutes, focus_seconds FROM daily_stats ORDER BY day')
@@ -89,8 +102,8 @@ test('PostgreSQL migrations support existing data, preserve history and block Da
   })
 
   await t.test('RLS is enabled on every app table, and anon/authenticated grants are revoked', async () => {
-    const { rows } = await db.query("SELECT relname, relrowsecurity FROM pg_class WHERE relname IN ('profiles', 'rooms', 'room_members', 'timers', 'timer_sessions', 'daily_stats')")
-    assert.equal(rows.length, 6)
+    const { rows } = await db.query("SELECT relname, relrowsecurity FROM pg_class WHERE relname IN ('profiles', 'rooms', 'room_members', 'timers', 'timer_sessions', 'daily_stats', 'group_study_notes')")
+    assert.equal(rows.length, 7)
     assert.ok(rows.every(r => r.relrowsecurity))
     for (const role of ['anon', 'authenticated']) {
       for (const table of rows.map(r => r.relname)) {
@@ -101,6 +114,7 @@ test('PostgreSQL migrations support existing data, preserve history and block Da
 
   await t.test('deleting a room retains sessions and daily goal history', async () => {
     await db.query('DELETE FROM rooms WHERE id = $1', [room])
+    assert.equal((await db.query('SELECT count(*)::int AS count FROM group_study_notes')).rows[0].count, 0)
     const { rows } = await db.query('SELECT timer_id FROM timer_sessions')
     assert.equal(rows.length, 3)
     assert.ok(rows.every(r => r.timer_id === null))
@@ -113,5 +127,6 @@ test('migrations also apply to a fresh database without Supabase roles', async t
   t.after(() => db.close())
   await db.exec(baseline)
   await db.exec(feature)
+  await db.exec(notesFeature)
   assert.equal((await db.query('SELECT count(*)::int AS count FROM daily_stats')).rows[0].count, 0)
 })
