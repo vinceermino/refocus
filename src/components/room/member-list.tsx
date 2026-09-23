@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { useClock } from '@/hooks/use-clock'
+import { ProfileLink } from '@/components/profile/profile-link'
 
 export interface RoomParticipant { id: string; username: string; role: string; status: string; lastSeenAt: string | null }
 
@@ -34,12 +35,12 @@ export function MemberList({ members, roomId, currentUserId, role, onChange }: {
     <h2 className="mb-3 text-sm font-semibold">Members <span className="font-normal text-muted-foreground">· {members.filter(isOnline).length} online</span></h2>
     <ul className="space-y-2">{members.map(member => <li key={member.id} className="flex items-center gap-2 rounded-lg p-2">
       {member.role === 'owner' ? <Crown aria-label="Owner" className="h-4 w-4 shrink-0 text-amber-500" /> : member.role === 'admin' ? <Shield aria-label="Admin" className="h-4 w-4 shrink-0 text-accent-primary" /> : null}
-      <div className="min-w-0 flex-1"><p className="truncate text-sm">{member.username}{member.id === currentUserId ? ' (You)' : ''}</p><p className="text-xs text-muted-foreground">{member.status === 'active' ? member.role : member.status}{isOnline(member) ? ' · Online' : ''}</p></div>
+      <div className="min-w-0 flex-1"><ProfileLink userId={member.id} username={member.username} avatar className="max-w-full text-sm">{member.username}{member.id === currentUserId ? ' (You)' : ''}</ProfileLink><p className="text-xs text-muted-foreground">{member.status === 'active' ? member.role : member.status}{isOnline(member) ? ' · Online' : ''}</p></div>
       {canManageRoom(role) && member.id !== currentUserId && member.role !== 'owner' && <Button size="icon" variant="ghost" aria-label={`Manage ${member.username}`} onClick={() => { setSelected(member.id); setConfirm(null) }}><MoreHorizontal className="h-4 w-4" /></Button>}
     </li>)}</ul>
     <Dialog open={!!target} onOpenChange={open => { if (!open) setSelected(null) }}><DialogContent onClose={() => setSelected(null)}>
-      <DialogHeader><DialogTitle>Manage {target?.username}</DialogTitle></DialogHeader>
-      {confirm ? <div className="space-y-3"><p>Confirm {confirm === 'transfer' ? 'transferring ownership to' : `${confirm} for`} {target?.username}?{confirm === 'transfer' && ' You will become an admin.'}</p><Button disabled={pending} onClick={() => run(confirm)}>Confirm</Button><Button variant="ghost" disabled={pending} onClick={() => setConfirm(null)}>Cancel</Button></div>
+      <DialogHeader><DialogTitle>Manage {target && <ProfileLink userId={target.id} username={target.username} />}</DialogTitle></DialogHeader>
+      {confirm ? <div className="space-y-3"><p>Confirm {confirm === 'transfer' ? 'transferring ownership to' : `${confirm} for`} {target && <ProfileLink userId={target.id} username={target.username} />}?{confirm === 'transfer' && ' You will become an admin.'}</p><Button disabled={pending} onClick={() => run(confirm)}>Confirm</Button><Button variant="ghost" disabled={pending} onClick={() => setConfirm(null)}>Cancel</Button></div>
         : <div className="flex flex-col gap-2">{actions.filter(a => target && !memberActionError(role, target.role, target.id === currentUserId, a.action)).map(a => <Button key={a.action} variant="outline" disabled={pending} onClick={() => ['kick', 'ban', 'transfer'].includes(a.action) ? setConfirm(a.action) : run(a.action)}>{a.label}</Button>)}</div>}
     </DialogContent></Dialog>
   </div>

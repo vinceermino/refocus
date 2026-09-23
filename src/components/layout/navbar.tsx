@@ -10,12 +10,15 @@ import { Button } from '@/components/ui/button'
 import { useAccent } from '@/components/providers/accent-provider'
 import { signOut } from '@/actions/auth'
 import { cn } from '@/lib/utils'
+import { ProfileLink } from '@/components/profile/profile-link'
+import { MinimalModeToggle } from './minimal-mode-toggle'
 
 interface NavbarProps {
   username?: string
+  userId?: string
 }
 
-export function Navbar({ username }: NavbarProps) {
+export function Navbar({ username, userId }: NavbarProps) {
   const { resolvedTheme, setTheme } = useTheme()
   const pathname = usePathname()
   const { accent, setAccent } = useAccent()
@@ -23,11 +26,11 @@ export function Navbar({ username }: NavbarProps) {
 
   return (
     <nav aria-label="Main navigation" className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-sm">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-2 sm:px-4 min-h-14 flex flex-wrap items-center justify-between gap-y-1 py-1">
         <div className="flex min-w-0 items-center gap-1 sm:gap-4">
           <Link href="/dashboard" aria-label="Re-Focus dashboard" aria-current={pathname === "/dashboard" ? "page" : undefined} className="flex h-10 min-w-10 items-center justify-center gap-2 rounded-lg group">
             <Timer className="h-5 w-5 text-accent-primary" />
-            <span className="font-handwriting font-bold text-2xl tracking-tight hidden sm:inline-block group-hover:text-accent-primary transition-colors">
+            <span className="font-handwriting font-bold text-2xl tracking-tight hidden lg:inline-block group-hover:text-accent-primary transition-colors">
               Re-Focus
             </span>
           </Link>
@@ -58,9 +61,10 @@ export function Navbar({ username }: NavbarProps) {
           </Link>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-0 sm:gap-1">
+          <MinimalModeToggle />
           {/* Accent theme selector */}
-          <div className="relative">
+          <div className="relative minimal-optional">
             <Button
               variant="ghost"
               size="icon"
@@ -114,16 +118,16 @@ export function Navbar({ username }: NavbarProps) {
           </Button>
 
           {/* User info */}
-          {username && (
-            <span className="hidden md:inline text-sm font-medium text-foreground truncate max-w-[120px]">{username}</span>
+          {username && userId && (
+            <ProfileLink userId={userId} username={username} avatar compact className="max-w-[160px] p-1 text-sm font-medium" />
           )}
 
           {/* Sign out */}
-          <form action={signOut}>
+          {userId ? <form action={signOut}>
             <Button variant="ghost" size="icon" type="submit" title="Sign out" aria-label="Sign out">
               <LogOut className="h-4 w-4" />
             </Button>
-          </form>
+          </form> : <Link href="/login" className="px-2 py-2 text-sm hover:underline">Log in</Link>}
         </div>
       </div>
     </nav>

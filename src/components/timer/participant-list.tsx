@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { ProfileLink } from '@/components/profile/profile-link'
 
 interface Participant {
   id: string
@@ -34,12 +35,12 @@ export function ParticipantList({ participants, currentUserId }: ParticipantList
           >
 
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">
+              <ProfileLink userId={p.id} username={p.username} avatar className="max-w-full text-sm font-medium">
                 {p.username}
                 {p.id === currentUserId && (
                   <span className="text-xs text-muted-foreground ml-1">(You)</span>
                 )}
-              </p>
+              </ProfileLink>
             </div>
           </div>
         ))}

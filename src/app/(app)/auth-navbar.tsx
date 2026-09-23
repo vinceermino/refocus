@@ -5,5 +5,5 @@ import { useUserData } from '@/components/providers/user-data-provider'
 
 export function AuthNavbar() {
   const { profile } = useUserData()
-  return <Navbar username={profile?.username} />
+  return <Navbar username={profile?.username} userId={profile?.id} />
 }
