@@ -280,7 +280,7 @@ export function StudyRoom({ room: initialRoom, currentUser, role: initialRole, m
       {/* Main content */}
       <div className="study-room-layout grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8">
         {/* Timer section */}
-        <div className="flex flex-col items-center gap-8">
+        <div className="room-timer-panel flex flex-col items-center gap-8">
           <TimerDisplay
             displaySeconds={timerOutput.displaySeconds}
             progress={timerOutput.progress}

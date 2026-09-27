@@ -18,7 +18,7 @@ export function DailyGoal() {
   const [pending, startTransition] = useTransition()
   if (!stats) return null
   const percent = Math.min(100, stats.todaySeconds / (stats.goalMinutes * 60) * 100)
-  return <section className="w-full rounded-xl border border-border bg-card p-4" aria-label="Daily focus goal">
+  return <section className="daily-goal w-full rounded-xl border border-border bg-card p-4" aria-label="Daily focus goal">
     <div className="flex items-center justify-between gap-2">
       <h2 className="text-sm font-semibold"><MinimalModeText short="Daily goal">Today’s focus goal</MinimalModeText></h2>
       <Button variant="ghost" size="sm" aria-label="Edit daily focus goal" onClick={() => { setMinutes(String(stats.goalMinutes)); setError(''); setOpen(true) }}><Pencil className="h-3 w-3" />Edit</Button>

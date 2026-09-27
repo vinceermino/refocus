@@ -8,6 +8,8 @@ interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Badge({ className, variant = 'default', ...props }: BadgeProps) {
   return (
     <div
+      data-slot="badge"
+      data-variant={variant}
       className={cn(
         'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors',
         {

@@ -11,10 +11,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         type={type}
+        data-slot="button"
+        data-variant={variant}
         className={cn(
-          'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
+          'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
           {
-            'bg-accent-primary text-primary-foreground hover:bg-accent-primary/90 shadow-sm': variant === 'default',
+            'bg-accent-primary text-primary-foreground hover:bg-accent-primary/90': variant === 'default',
             'bg-secondary text-secondary-foreground hover:bg-secondary/80': variant === 'secondary',
             'border border-border bg-transparent hover:bg-muted': variant === 'outline',
             'hover:bg-muted': variant === 'ghost',
@@ -22,7 +24,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           },
           {
             'h-10 px-4 py-2 text-sm': size === 'default',
-            'h-8 px-3 text-xs': size === 'sm',
+            'h-10 px-3 text-sm': size === 'sm',
             'h-12 px-6 text-base': size === 'lg',
             'h-10 w-10': size === 'icon',
           },

@@ -65,7 +65,7 @@ export function TimerControls({
     <div className="flex w-full min-w-0 flex-col items-center gap-6">
       {/* Mode toggle */}
       {!isActive && (
-        <div className="flex max-w-full flex-wrap justify-center gap-1 bg-muted rounded-full p-1">
+        <div role="group" aria-label="Timer mode" className="timer-modes flex max-w-full flex-wrap justify-center gap-1 rounded-lg bg-muted p-1">
           <Button
             variant="ghost"
             size="sm"
@@ -73,7 +73,7 @@ export function TimerControls({
             disabled={loading}
             onClick={() => onModeChange('countdown')}
             className={cn(
-              'rounded-full px-3 sm:px-4 font-medium transition-all duration-300',
+              'px-3 sm:px-4 font-medium',
               mode === 'countdown'
                 ? 'bg-background shadow-sm text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
@@ -88,7 +88,7 @@ export function TimerControls({
             disabled={loading}
             onClick={() => onModeChange('rest')}
             className={cn(
-              'rounded-full px-3 sm:px-4 font-medium transition-all duration-300',
+              'px-3 sm:px-4 font-medium',
               mode === 'rest'
                 ? 'bg-background shadow-sm text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
@@ -103,7 +103,7 @@ export function TimerControls({
             disabled={loading}
             onClick={() => onModeChange('stopwatch')}
             className={cn(
-              'rounded-full px-3 sm:px-4 font-medium transition-all duration-300',
+              'px-3 sm:px-4 font-medium',
               mode === 'stopwatch'
                 ? 'bg-background shadow-sm text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
@@ -116,11 +116,11 @@ export function TimerControls({
 
       {/* Duration presets (countdown only) */}
       {!isActive && (mode === 'countdown' || mode === 'rest') && (
-        <div className="flex flex-col items-center gap-2">
-          <label className="text-sm font-medium text-muted-foreground">
+        <fieldset className="min-w-0 space-y-2 text-center">
+          <legend className="mb-2 w-full text-sm font-medium text-muted-foreground">
             <MinimalModeText short="Duration (min)">{mode === 'rest' ? 'Rest Duration (minutes)' : 'Focus Duration (minutes)'}</MinimalModeText>
-          </label>
-          <div className="flex flex-wrap justify-center gap-2">
+          </legend>
+          <div className="timer-presets flex flex-wrap justify-center gap-2">
             {PRESETS.map((preset) => (
               <button
                 key={preset.label}
@@ -130,9 +130,9 @@ export function TimerControls({
                 disabled={loading}
                 onClick={() => onDurationChange(preset.seconds)}
                 className={cn(
-                  'min-h-10 px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
+                  'min-h-10 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50',
                   duration === preset.seconds
-                    ? 'bg-accent-primary text-primary-foreground shadow-sm'
+                    ? 'bg-accent-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80'
                 )}
               >
@@ -140,11 +140,11 @@ export function TimerControls({
               </button>
             ))}
           </div>
-        </div>
+        </fieldset>
       )}
 
       {/* Action buttons */}
-      <div className="flex items-center gap-3">
+      <div className="timer-actions flex flex-wrap items-center justify-center gap-3">
         {!isActive ? (
           <Button
             size="lg"

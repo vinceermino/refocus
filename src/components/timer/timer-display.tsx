@@ -1,6 +1,7 @@
 'use client'
 
 import { useClock } from '@/hooks/use-clock'
+import { useTimerAppearance } from '@/hooks/use-timer-appearance'
 import { cn, formatTime } from '@/lib/utils'
 
 interface TimerDisplayProps {
@@ -15,6 +16,8 @@ interface TimerDisplayProps {
 }
 
 export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, isComplete, mode, dailyRemaining, dailyUsed }: TimerDisplayProps) {
+  useTimerAppearance(isRunning, isPaused, isComplete)
+
   const radius = 140
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = (mode === 'countdown' || mode === 'rest')
@@ -42,18 +45,20 @@ export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, is
     : ''
 
   return (
-    <div className={cn(
-      'relative flex w-full max-w-[320px] flex-col items-center justify-center gap-4'
-    )}>
+    <div
+      data-state={isComplete ? 'complete' : isPaused ? 'paused' : isRunning ? 'running' : 'ready'}
+      className="timer-display relative flex w-full max-w-[320px] flex-col items-center justify-center gap-4"
+    >
       <svg
         width="320"
         height="320"
         viewBox="0 0 320 320"
         aria-hidden="true"
-        className="h-auto w-full transform -rotate-90"
+        className="timer-face h-auto w-full transform -rotate-90"
       >
         {/* Background circle */}
         <circle
+          className="timer-track"
           cx="160"
           cy="160"
           r={radius}
@@ -73,7 +78,7 @@ export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, is
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          className="transition-all duration-500 ease-in-out"
+          className="timer-progress transition-all duration-500 ease-in-out"
         />
       </svg>
 
@@ -81,15 +86,15 @@ export function TimerDisplay({ displaySeconds, progress, isRunning, isPaused, is
       <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ aspectRatio: '1 / 1', bottom: 'auto' }}>
         <span
           className={cn(
-            'font-mono text-[clamp(2.25rem,10vw,3.75rem)] font-bold tracking-tight transition-colors duration-500 ease-in-out',
+            'timer-digits font-mono text-[clamp(2.25rem,10vw,3.75rem)] font-bold tracking-tight transition-colors duration-500 ease-in-out',
             isComplete && 'text-timer-danger',
             isPaused && 'text-muted-foreground',
           )}
-          style={{ color: !isComplete && !isPaused ? getColor() : undefined }}
+          style={{ color: !isComplete && !isPaused ? `var(--timer-ink, ${getColor()})` : undefined }}
         >
           {formatTime(displaySeconds)}
         </span>
-        <span role="status" className="text-sm text-muted-foreground mt-2 uppercase tracking-widest">
+        <span role="status" className="timer-status text-sm text-muted-foreground mt-2 uppercase tracking-widest">
           {isComplete ? 'Complete!' : isPaused ? 'Paused' : isRunning ? (mode === 'countdown' ? 'Focusing' : mode === 'rest' ? 'Resting' : 'Studying') : 'Ready'}
         </span>
         {endTimeStr && (

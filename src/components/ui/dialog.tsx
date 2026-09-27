@@ -37,6 +37,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
     <DialogContext.Provider value={id}>
       <dialog
         ref={ref}
+        data-slot="dialog"
         aria-labelledby={`${id}-title`}
         className="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-y-auto overscroll-contain rounded-xl bg-card p-0 text-foreground shadow-xl backdrop:bg-black/60 backdrop:backdrop-blur-sm"
         onCancel={(event) => { event.preventDefault(); onOpenChange(false) }}
@@ -60,6 +61,7 @@ export function DialogContent({
 }: React.HTMLAttributes<HTMLDivElement> & { onClose?: () => void }) {
   return (
     <div
+      data-slot="dialog-content"
       className={cn(
         'relative rounded-xl border border-border bg-card p-5 sm:p-6',
         className

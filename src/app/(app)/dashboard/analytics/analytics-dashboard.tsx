@@ -27,28 +27,17 @@ function formatDurationLong(totalSeconds: number): string {
 }
 
 // --- Stat Card Component ---
-function StatCard({ icon: Icon, label, value, subValue, accentColor }: {
+function StatCard({ icon: Icon, label, value, subValue }: {
   icon: typeof Clock
   label: string
   value: string
   subValue?: string
-  accentColor?: string
 }) {
   return (
-    <div className="relative overflow-hidden p-5 rounded-2xl border border-border bg-card group hover:border-accent-primary/30 transition-all duration-300">
-      <div className="absolute top-0 right-0 w-24 h-24 rounded-full opacity-5 group-hover:opacity-10 transition-opacity duration-300"
-        style={{ background: accentColor || 'var(--accent-primary)', transform: 'translate(30%, -30%)' }}
-      />
-      <div className="flex items-start gap-3">
-        <div className="p-2 rounded-xl bg-accent-primary/10">
-          <Icon className="h-5 w-5 text-accent-primary" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">{label}</p>
-          <p className="text-2xl font-bold mt-0.5 break-words">{value}</p>
-          {subValue && <p className="text-xs text-muted-foreground mt-0.5">{subValue}</p>}
-        </div>
-      </div>
+    <div className="min-w-0 py-4">
+      <dt className="flex items-center gap-2 text-sm text-muted-foreground"><Icon aria-hidden="true" className="h-4 w-4" />{label}</dt>
+      <dd className="mt-1 break-words text-2xl font-semibold tabular-nums">{value}</dd>
+      {subValue && <dd className="mt-1 text-xs text-muted-foreground">{subValue}</dd>}
     </div>
   )
 }
@@ -59,10 +48,10 @@ function WeeklyChart({ data }: { data: StudyStats['weeklyData'] }) {
   const maxHours = Math.ceil(maxSeconds / 3600) || 1
 
   return (
-    <div className="p-6 rounded-2xl border border-border bg-card">
+    <section className="rounded-xl border border-border bg-card p-4 sm:p-6">
       <div className="flex items-center gap-2 mb-6">
         <BarChart3 className="h-5 w-5 text-accent-primary" />
-        <h3 className="font-semibold text-lg">Last 7 Days</h3>
+        <h2 className="font-semibold text-lg">Last 7 Days</h2>
       </div>
       <div className="flex items-end justify-between gap-2 h-48">
         {data.map((day, i) => {
@@ -71,13 +60,14 @@ function WeeklyChart({ data }: { data: StudyStats['weeklyData'] }) {
           return (
             <div key={day.fullDate} className="flex flex-col items-center gap-2 flex-1">
               {/* Value label */}
-              <span className="text-[10px] text-muted-foreground font-mono">
+              <span className="text-xs text-muted-foreground tabular-nums">
                 {day.seconds > 0 ? formatDuration(day.seconds) : '—'}
               </span>
               {/* Bar */}
               <div className="w-full flex items-end justify-center" style={{ height: '140px' }}>
                 <div
-                  className="rounded-t-lg transition-all duration-700 ease-out"
+                  aria-hidden="true"
+                  className="rounded-t-sm"
                   style={{
                     width: '100%',
                     maxWidth: '40px',
@@ -99,7 +89,7 @@ function WeeklyChart({ data }: { data: StudyStats['weeklyData'] }) {
           )
         })}
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -117,14 +107,14 @@ function DailyGoalRing({ used, limit }: { used: number; limit: number }) {
   }
 
   return (
-    <div className="p-6 rounded-2xl border border-border bg-card">
+    <section className="rounded-xl border border-border bg-card p-4 sm:p-6">
       <div className="flex items-center gap-2 mb-4">
         <Target className="h-5 w-5 text-accent-primary" />
-        <h3 className="font-semibold text-lg">Today&apos;s Progress</h3>
+        <h2 className="font-semibold text-lg">Today&apos;s Progress</h2>
       </div>
       <div className="flex items-center justify-center">
         <div className="relative">
-          <svg width="180" height="180" viewBox="0 0 180 180" className="transform -rotate-90">
+          <svg aria-hidden="true" width="180" height="180" viewBox="0 0 180 180" className="transform -rotate-90">
             <circle
               cx="90" cy="90" r={radius}
               fill="none" stroke="var(--border)" strokeWidth="10" opacity={0.3}
@@ -149,7 +139,7 @@ function DailyGoalRing({ used, limit }: { used: number; limit: number }) {
         <span>Daily Goal: {formatDuration(limit)}</span>
         <span>{formatDuration(limit)}</span>
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -159,16 +149,17 @@ function RoomBreakdown({ rooms }: { rooms: StudyStats['roomBreakdown'] }) {
 
   if (rooms.length === 0) {
     return (
-      <div className="p-6 rounded-2xl border border-border bg-card">
-        <h3 className="font-semibold text-lg mb-4">Study by Room</h3>
-        <p className="text-sm text-muted-foreground text-center py-8">No study sessions yet</p>
+      <div className="border-t border-border pt-6">
+        <h2 className="font-semibold text-lg mb-4">Study by Room</h2>
+        <p className="text-sm text-muted-foreground">No study sessions yet. Complete a focus session to see your study time here.</p>
+        <Link href="/dashboard" className="mt-3 inline-flex min-h-10 items-center text-sm font-medium text-accent-primary underline underline-offset-4">Start a focus session</Link>
       </div>
     )
   }
 
   return (
-    <div className="p-6 rounded-2xl border border-border bg-card">
-      <h3 className="font-semibold text-lg mb-4">Study by Room</h3>
+    <section className="border-t border-border pt-6">
+      <h2 className="font-semibold text-lg mb-4">Study by Room</h2>
       <div className="space-y-3">
         {rooms.map((room) => {
           const percent = Math.round((room.seconds / total) * 100)
@@ -180,7 +171,7 @@ function RoomBreakdown({ rooms }: { rooms: StudyStats['roomBreakdown'] }) {
                   {formatDuration(room.seconds)} · {percent}%
                 </span>
               </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div aria-hidden="true" className="h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-700 ease-out"
                   style={{ width: `${percent}%`, backgroundColor: room.color }}
@@ -190,27 +181,27 @@ function RoomBreakdown({ rooms }: { rooms: StudyStats['roomBreakdown'] }) {
           )
         })}
       </div>
-    </div>
+    </section>
   )
 }
 
 // --- Main Dashboard ---
 export function AnalyticsDashboard({ stats }: { stats: StudyStats }) {
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 animate-fade-in">
+    <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <Link href="/dashboard" aria-label="Back to dashboard" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg hover:bg-muted">
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <h1 className="text-3xl font-bold">Analytics</h1>
+          <h1 className="text-2xl font-semibold">Analytics</h1>
           <p className="minimal-optional text-sm text-muted-foreground">Your study performance overview</p>
         </div>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <dl className="mb-8 grid grid-cols-1 gap-x-6 border-y border-border sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={Clock}
           label="Today"
@@ -234,7 +225,7 @@ export function AnalyticsDashboard({ stats }: { stats: StudyStats }) {
           value={`${stats.currentStreak} day${stats.currentStreak !== 1 ? 's' : ''}`}
           subValue={stats.longestStreak > 0 ? `Best: ${stats.longestStreak} days` : undefined}
         />
-      </div>
+      </dl>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">

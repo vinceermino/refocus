@@ -1,0 +1,273 @@
+/* She / sakura. Keep the stored "pink" key compatible with existing profiles.
+   Rose ink is used for text; the pale brand colors are reserved for surfaces. */
+:root[data-accent="pink"] {
+  --sakura: #ffb7c5;
+  --dusty-rose: #dcae96;
+  --matcha: #88b04b;
+  --gold: #c5a059;
+  --background: #fdfbf7;
+  --foreground: #443e3b;
+  --card: #fffdf9d9;
+  --card-foreground: #443e3b;
+  --muted: #f2ebe5;
+  --muted-foreground: #76665f;
+  --border: #e5d8ce;
+  --secondary: #f5e5e1;
+  --secondary-foreground: #6c4f4c;
+  --ring: #8b545f;
+  --accent-primary: #8b545f;
+  --primary-foreground: #fffdf9;
+  --accent-primary-soft: #f9e8e9;
+  --timer-running: #566d38;
+  --timer-warning: #806120;
+  --timer-danger: #ad4853;
+  --she-button: #f2c6cb;
+  --she-button-hover: #edb8c0;
+  --she-button-ink: #654449;
+  --she-paper: #fffdf9b8;
+
+  /* next-themes sets an inline scheme; native controls should stay paper-light. */
+  color-scheme: light !important;
+}
+
+/* The evening option is warm blush paper, keeping She soft in either mode. */
+:root.dark[data-accent="pink"] {
+  --background: #f4ebe6;
+  --card: #fdf7f1e6;
+  --muted: #eaded5;
+  --muted-foreground: #70605a;
+  --border: #ddcabe;
+  --secondary: #ecd9d3;
+  --accent-primary-soft: #f3e1e1;
+  --she-paper: #fff9f1c7;
+}
+
+.she-only { display: none; }
+
+:root[data-accent="pink"] body {
+  /* next/font variables are attached to body, so resolve the font here. */
+  --she-heading: var(--font-cormorant), "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
+  background-image: radial-gradient(ellipse at 100% 0%, #ffb7c520, transparent 45%),
+    radial-gradient(ellipse at 0% 85%, #dcae9614, transparent 40%);
+}
+
+:root[data-accent="pink"] body::before,
+:root[data-accent="pink"] body::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+}
+
+:root[data-accent="pink"] body::before {
+  inset: 0;
+  z-index: 0;
+  background: url("/themes/she/washi.svg") repeat;
+  opacity: .32;
+}
+
+:root[data-accent="pink"] body::after {
+  top: 4rem;
+  right: 0;
+  width: min(36vw, 440px);
+  aspect-ratio: 440 / 380;
+  z-index: 0;
+  background: url("/themes/she/sakura.svg") top right / contain no-repeat;
+  opacity: .7;
+}
+
+:root[data-accent="pink"] :is(h1, h2, h3, .font-handwriting) {
+  font-family: var(--she-heading);
+  font-weight: 500;
+  letter-spacing: -.025em;
+}
+
+:root[data-accent="pink"] h1:not(.sr-only) {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.15;
+}
+
+:root[data-accent="pink"] :is(h2, h3) { line-height: 1.25; }
+:root[data-accent="pink"] h2.text-xl { font-size: 1.75rem; }
+:root[data-accent="pink"] h3.text-lg { font-size: 1.5rem; }
+:root[data-accent="pink"] ::selection { background: #ffb7c578; color: #443e3b; }
+
+:root[data-accent="pink"] .landing-shell { background: transparent; }
+:root[data-accent="pink"] .she-only { display: block; }
+:root[data-accent="pink"] .she-intro { text-align: center; max-width: 34rem; }
+:root[data-accent="pink"] .she-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem;
+  color: var(--accent-primary);
+  font-size: .625rem;
+  font-weight: 500;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+}
+:root[data-accent="pink"] .she-eyebrow::before,
+:root[data-accent="pink"] .she-eyebrow::after {
+  content: "";
+  width: 2rem;
+  height: 1px;
+  background: var(--dusty-rose);
+}
+:root[data-accent="pink"] .she-intro h2 {
+  margin-block: .875rem .5rem;
+  font-size: clamp(2.75rem, 7vw, 4rem);
+  line-height: 1.05;
+}
+:root[data-accent="pink"] .she-intro p:last-child {
+  color: var(--muted-foreground);
+  font-size: .875rem;
+  line-height: 1.8;
+}
+
+:root[data-accent="pink"] .app-navbar {
+  background: color-mix(in srgb, var(--background) 88%, transparent);
+  border-color: color-mix(in srgb, var(--border) 75%, transparent);
+}
+:root[data-accent="pink"] .app-navbar > div { min-height: 4.5rem; }
+:root[data-accent="pink"] .app-navbar a { border-radius: 999px; }
+:root[data-accent="pink"] .app-navbar .font-handwriting { font-size: 1.75rem; }
+
+:root[data-accent="pink"] [data-slot="button"] {
+  border-radius: 999px;
+  letter-spacing: .015em;
+  box-shadow: none;
+}
+:root[data-accent="pink"] [data-slot="button"][data-variant="default"],
+:root[data-accent="pink"] .primary-link {
+  border: 1px solid #dca2ab;
+  background: var(--she-button);
+  color: var(--she-button-ink);
+}
+:root[data-accent="pink"] [data-slot="button"][data-variant="default"]:hover,
+:root[data-accent="pink"] .primary-link:hover { background: var(--she-button-hover); }
+:root[data-accent="pink"] .primary-link { border-radius: 999px; }
+:root[data-accent="pink"] [data-slot="button"][data-variant="outline"] { background: var(--she-paper); }
+:root[data-accent="pink"] [data-slot="button"][data-variant="outline"]:hover { background: var(--muted); }
+:root[data-accent="pink"] [data-slot="button"][data-variant="destructive"] {
+  background: var(--timer-danger);
+  color: #fffdf9;
+}
+:root[data-accent="pink"] [data-slot="button"][data-variant="destructive"]:hover { background: #923a45; }
+
+:root[data-accent="pink"] :is([data-slot="card"], .daily-goal, .study-room-members, .empty-rooms) {
+  border-radius: 1.5rem;
+  background: var(--card);
+  box-shadow: 0 4px 24px #79574704;
+}
+:root[data-accent="pink"] [data-slot="card-header"] { padding: 1.75rem 1.75rem 1.25rem; gap: .375rem; }
+:root[data-accent="pink"] [data-slot="card-content"],
+:root[data-accent="pink"] [data-slot="card-footer"] { padding: 0 1.75rem 1.75rem; }
+:root[data-accent="pink"] .auth-fields > * + * { margin-top: 1.5rem; }
+:root[data-accent="pink"] .style-choice { padding: .875rem .5rem; border-radius: 1rem; }
+
+:root[data-accent="pink"] :is([data-slot="input"], textarea, select) {
+  border-radius: .875rem;
+  border-color: var(--border);
+  background: var(--she-paper);
+  color: var(--foreground);
+}
+:root[data-accent="pink"] [data-slot="input"] { min-height: 2.875rem; padding-inline: 1rem; }
+:root[data-accent="pink"] :is([data-slot="input"], textarea, select):focus-visible { border-color: var(--accent-primary); }
+:root[data-accent="pink"] [data-slot="dialog"] {
+  border-radius: 1.5rem;
+  background: var(--background);
+  box-shadow: 0 16px 64px #60473d18;
+}
+:root[data-accent="pink"] [data-slot="dialog"]::backdrop { background: #64534b38; backdrop-filter: blur(5px); }
+:root[data-accent="pink"] [data-slot="dialog-content"] { border-radius: 1.5rem; padding: 1.75rem; }
+:root[data-accent="pink"] [data-slot="dialog-content"] h2 { font-size: 1.75rem; }
+:root[data-accent="pink"] .theme-option { min-height: 3rem; border-radius: .875rem; gap: .75rem; }
+
+:root[data-accent="pink"] .dashboard-shell { padding-block: 3rem 4rem; }
+:root[data-accent="pink"] .dashboard-header { margin-bottom: 2.5rem; }
+:root[data-accent="pink"] .dashboard-note { margin-top: .625rem; color: var(--muted-foreground); font-size: .875rem; }
+:root[data-accent="pink"] .study-overview { padding-block: .5rem; margin-block: 3rem; }
+:root[data-accent="pink"] .study-overview dd { font-family: var(--she-heading); font-size: 2rem; font-weight: 500; }
+:root[data-accent="pink"] .room-grid { gap: 1.5rem; }
+:root[data-accent="pink"] .daily-goal { padding: 1.25rem 1.5rem; }
+:root[data-accent="pink"] .daily-goal h2 { font-size: 1.25rem; }
+:root[data-accent="pink"] .daily-goal [role="progressbar"] > div { background: var(--timer-running); }
+:root[data-accent="pink"] .text-orange-500 { color: var(--timer-warning); }
+
+:root[data-accent="pink"] .personal-timer { max-width: 46rem; gap: 1.5rem; }
+:root[data-accent="pink"] .timer-panel {
+  position: relative;
+  isolation: isolate;
+  border-radius: 2rem;
+  padding: 1.75rem 1.25rem 2.5rem;
+  gap: 1.5rem;
+  background: var(--card);
+  box-shadow: 0 8px 40px #79574705;
+}
+:root[data-accent="pink"] .timer-panel::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  z-index: -1;
+  height: 4rem;
+  border-radius: 0 0 2rem 2rem;
+  background: url("/themes/she/seigaiha.svg") center bottom repeat-x;
+  mask-image: linear-gradient(transparent, #000);
+  opacity: .7;
+  pointer-events: none;
+}
+:root[data-accent="pink"] .timer-display { align-self: center; justify-self: center; }
+:root[data-accent="pink"] .timer-face {
+  border-radius: 50%;
+  background: radial-gradient(circle, transparent 58%, #dcae9615 58.4%, transparent 59%, transparent 63%, #dcae9618 63.4%, transparent 64%);
+}
+:root[data-accent="pink"] .timer-face circle { stroke-width: 3; }
+:root[data-accent="pink"] .timer-track { stroke: var(--dusty-rose); opacity: .6; }
+:root[data-accent="pink"] .timer-display[data-state="ready"] { --timer-ink: var(--foreground); }
+:root[data-accent="pink"] .timer-display[data-state="ready"] .timer-progress { stroke: var(--dusty-rose); }
+/* Active rings retain the component's warning and completion colors. */
+:root[data-accent="pink"] .timer-digits {
+  font-family: var(--she-heading);
+  font-size: clamp(2.75rem, 12vw, 4.5rem);
+  font-weight: 500;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -.04em;
+}
+:root[data-accent="pink"] .timer-status { font-size: .625rem; letter-spacing: .22em; margin-top: .75rem; }
+:root[data-accent="pink"] .timer-modes { border: 1px solid var(--border); border-radius: 999px; background: transparent; padding: .25rem; }
+:root[data-accent="pink"] .timer-modes [aria-pressed="true"] { background: var(--secondary); color: var(--secondary-foreground); }
+:root[data-accent="pink"] .timer-presets button { border: 1px solid transparent; border-radius: 50%; min-width: 2.5rem; padding-inline: .5rem; background: transparent; }
+:root[data-accent="pink"] .timer-presets button:hover { background: var(--muted); }
+:root[data-accent="pink"] .timer-presets button[aria-pressed="true"] { background: var(--accent-primary-soft); color: var(--accent-primary); border-color: var(--dusty-rose); }
+:root[data-accent="pink"] .timer-actions [data-variant="default"] { padding-inline: 2.5rem; }
+
+@media (min-width: 720px) {
+  :root[data-accent="pink"] .timer-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, .9fr);
+    padding: 2rem 2rem 2.5rem;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 639px) {
+  :root[data-accent="pink"] body::after { top: 5rem; width: 52vw; opacity: .4; }
+  :root[data-accent="pink"] .dashboard-shell { padding-block: 2rem 3rem; }
+  :root[data-accent="pink"] [data-slot="card-header"] { padding: 1.5rem 1.25rem 1rem; }
+  :root[data-accent="pink"] [data-slot="card-content"],
+  :root[data-accent="pink"] [data-slot="card-footer"] { padding: 0 1.25rem 1.5rem; }
+  :root[data-accent="pink"] [data-slot="dialog-content"] { padding: 1.5rem 1.25rem; }
+}
+
+/* Minimal mode keeps the palette but removes ornament and extra whitespace. */
+:root[data-accent="pink"][data-minimal="true"],
+:root.dark[data-accent="pink"][data-minimal="true"] {
+  --accent-primary: #80575e;
+  --accent-primary-soft: #f0e1df;
+}
+:root[data-accent="pink"][data-minimal="true"] body::before,
+:root[data-accent="pink"][data-minimal="true"] body::after,
+:root[data-accent="pink"][data-minimal="true"] .she-only,
+:root[data-accent="pink"][data-minimal="true"] .timer-panel::after { display: none; }
+:root[data-accent="pink"][data-minimal="true"] .dashboard-shell { padding-block: 1rem; }
+:root[data-accent="pink"][data-minimal="true"] .timer-panel { box-shadow: none; padding: 1.25rem; }
+:root[data-accent="pink"][data-minimal="true"] .timer-face { background: none; }

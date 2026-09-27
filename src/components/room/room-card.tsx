@@ -17,8 +17,8 @@ export function RoomCard({ room }: RoomCardProps) {
   const activeTimer = room.timers[0]
 
   return (
-    <Link href={`/room/${room.code}`}>
-      <Card className="hover:border-accent-primary/50 transition-all hover:shadow-md cursor-pointer group">
+    <Link href={`/room/${room.code}`} className="min-w-0 rounded-xl">
+      <Card className="group h-full cursor-pointer transition-colors hover:border-accent-primary/50">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-3">
             <CardTitle className="min-w-0 break-words group-hover:text-accent-primary transition-colors">
@@ -47,7 +47,7 @@ export function RoomCard({ room }: RoomCardProps) {
                 ) : (
                   <Timer className="h-4 w-4" />
                 )}
-                {activeTimer.mode === 'stopwatch' ? 'Stopwatch' : 'Countdown'}
+                {activeTimer.mode === 'stopwatch' ? 'Stopwatch' : activeTimer.mode === 'rest' ? 'Rest' : 'Focus'}
               </div>
             )}
           </div>

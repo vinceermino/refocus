@@ -1,4 +1,9 @@
 @import "tailwindcss";
+/* Variant palettes remain scoped to their existing stored accent keys. */
+@import "./she-theme.css";
+@import "./he-theme.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ===== CSS Custom Properties for Theming ===== */
 
@@ -19,7 +24,6 @@
   --accent-primary: #4f46e5;
   --primary-foreground: #ffffff;
   --accent-primary-soft: #e0e7ff;
-  --accent-glow: rgba(99, 102, 241, 0.15);
   --timer-running: #15803d;
   --timer-warning: #a16207;
   --timer-danger: #b91c1c;
@@ -41,62 +45,9 @@
   --accent-primary: #818cf8;
   --primary-foreground: #0f172a;
   --accent-primary-soft: #1e1b4b;
-  --accent-glow: rgba(129, 140, 248, 0.1);
   --timer-running: #4ade80;
   --timer-warning: #fbbf24;
   --timer-danger: #f87171;
-}
-
-/* ===== Pink Accent (She) ===== */
-[data-accent="pink"] {
-  --accent-primary: #be185d;
-  --accent-primary-soft: #fce7f3;
-  --accent-glow: rgba(236, 72, 153, 0.15);
-}
-
-.dark[data-accent="pink"],
-.dark [data-accent="pink"] {
-  --accent-primary: #f472b6;
-  --accent-primary-soft: #500724;
-  --accent-glow: rgba(244, 114, 182, 0.1);
-}
-
-:root[data-accent="pink"] {
-  --accent-primary: #be185d;
-  --accent-primary-soft: #fce7f3;
-  --accent-glow: rgba(236, 72, 153, 0.15);
-}
-
-:root.dark[data-accent="pink"] {
-  --accent-primary: #f472b6;
-  --accent-primary-soft: #500724;
-  --accent-glow: rgba(244, 114, 182, 0.1);
-}
-
-/* ===== Dark Accent (He) ===== */
-[data-accent="dark"] {
-  --accent-primary: #475569;
-  --accent-primary-soft: #f1f5f9;
-  --accent-glow: rgba(71, 85, 105, 0.15);
-}
-
-.dark[data-accent="dark"],
-.dark [data-accent="dark"] {
-  --accent-primary: #94a3b8;
-  --accent-primary-soft: #1e293b;
-  --accent-glow: rgba(148, 163, 184, 0.1);
-}
-
-:root[data-accent="dark"] {
-  --accent-primary: #475569;
-  --accent-primary-soft: #f1f5f9;
-  --accent-glow: rgba(71, 85, 105, 0.15);
-}
-
-:root.dark[data-accent="dark"] {
-  --accent-primary: #94a3b8;
-  --accent-primary-soft: #1e293b;
-  --accent-glow: rgba(148, 163, 184, 0.1);
 }
 
 /* ===== Global Styles ===== */
@@ -121,7 +72,6 @@ body {
   --color-accent-primary: var(--accent-primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-accent-primary-soft: var(--accent-primary-soft);
-  --color-accent-glow: var(--accent-glow);
   --color-timer-running: var(--timer-running);
   --color-timer-warning: var(--timer-warning);
   --color-timer-danger: var(--timer-danger);
@@ -131,16 +81,6 @@ body {
 }
 
 /* Animations */
-@keyframes pulse-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 20px var(--accent-glow);
-  }
-  50% {
-    box-shadow: 0 0 40px var(--accent-glow), 0 0 60px var(--accent-glow);
-  }
-}
-
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -152,27 +92,8 @@ body {
   }
 }
 
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
-}
-
-.animate-slide-up {
-  animation: slide-up 0.4s ease-out;
 }
 
 /* Scrollbar styling */
@@ -203,19 +124,17 @@ main:focus { outline: none; }
 
 /* Minimal mode changes presentation without hiding timer, note or room actions. */
 body, nav, main, article, section, .study-room-layout, .study-room-members {
-  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, padding 200ms ease, gap 200ms ease;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
 }
 
 :root[data-minimal="true"] {
   --accent-primary: #334155;
   --accent-primary-soft: #f1f5f9;
-  --accent-glow: transparent;
 }
 
 :root.dark[data-minimal="true"] {
   --accent-primary: #cbd5e1;
   --accent-primary-soft: #1e293b;
-  --accent-glow: transparent;
 }
 
 .minimal-only { display: none; }
@@ -226,8 +145,8 @@ body, nav, main, article, section, .study-room-layout, .study-room-members {
 [data-minimal="true"] .study-room-members { background: transparent; padding: 1.5rem; }
 [data-minimal="true"] .study-room-members ul { display: flex; flex-wrap: wrap; gap: 1rem; }
 [data-minimal="true"] .study-room-members li { flex: 1 1 240px; }
-[data-minimal="true"] :is(.shadow-sm, .shadow-lg, .shadow-xl, .animate-pulse-glow) { box-shadow: none; }
-[data-minimal="true"] :is(.animate-pulse-glow, .animate-ping) { animation: none; }
+[data-minimal="true"] :is(.shadow-sm, .shadow-lg, .shadow-xl) { box-shadow: none; }
+[data-minimal="true"] .animate-ping { animation: none; }
 [data-minimal="true"] [class*="bg-gradient"] { background-image: none; }
 
 @media (prefers-reduced-motion: reduce) {

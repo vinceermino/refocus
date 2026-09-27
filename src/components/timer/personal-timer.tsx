@@ -130,14 +130,11 @@ export function PersonalTimer() {
   }, [stopAlarm, profile, refreshStats, timerState])
 
   return (
-    <div className="flex flex-col items-center w-full max-w-md mx-auto space-y-10">
+    <div className="personal-timer flex w-full max-w-md flex-col items-center gap-6 mx-auto">
       {profile && <DailyGoal />}
 
       {/* Timer Section */}
-      <div className="flex flex-col items-center gap-8 w-full p-4 sm:p-8 rounded-3xl bg-card/80 backdrop-blur-xl border border-border shadow-2xl shadow-accent-glow">
-
-
-
+      <div className="timer-panel flex w-full flex-col items-center gap-6 rounded-xl border border-border bg-card p-4 sm:p-6">
         <TimerDisplay
           displaySeconds={timerOutput.displaySeconds}
           progress={timerOutput.progress}

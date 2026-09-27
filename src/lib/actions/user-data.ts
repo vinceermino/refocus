@@ -6,19 +6,29 @@ export async function getUserData() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated', status: 401 }
-  const profile = await prisma.profile.findUnique({ where: { userId: user.id } })
-  if (!profile) return { error: 'Profile not found', status: 404 }
-  const memberships = await prisma.roomMember.findMany({
-    where: { profileId: profile.id, status: 'active' },
-    include: { room: { include: {
-      _count: { select: { members: { where: { status: 'active' } } } },
-      timers: { where: { status: { in: ['running', 'paused'] } }, take: 1, orderBy: { createdAt: 'desc' } },
-    } } },
-    orderBy: { joinedAt: 'desc' },
+  const profile = await prisma.profile.findUnique({
+    where: { userId: user.id },
+    select: { id: true, username: true, genderPref: true, totalStudyTime: true },
   })
-  const stats = await loadStudyStats(profile.id)
+  if (!profile) return { error: 'Profile not found', status: 404 }
+  const [memberships, stats] = await Promise.all([
+    prisma.roomMember.findMany({
+      where: { profileId: profile.id, status: 'active' },
+      select: { room: { select: {
+        id: true, name: true, code: true,
+        _count: { select: { members: { where: { status: 'active' } } } },
+        timers: {
+          where: { status: { in: ['running', 'paused'] } },
+          select: { status: true, mode: true },
+          take: 1, orderBy: { createdAt: 'desc' },
+        },
+      } } },
+      orderBy: { joinedAt: 'desc' },
+    }),
+    loadStudyStats(profile.id),
+  ])
   return { data: {
-    profile: { id: profile.id, username: profile.username, genderPref: profile.genderPref, totalStudyTime: profile.totalStudyTime },
+    profile,
     rooms: memberships.map(m => m.room), stats,
   } }
 }

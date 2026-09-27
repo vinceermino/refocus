@@ -1,0 +1,347 @@
+/* He / sumi-e. Preserve the stored "dark" accent key independently of the
+   light/dark mode preference. Brand stone and matcha are decorative; text uses
+   deeper or lighter companion colors for contrast on both paper and charcoal. */
+:root[data-accent="dark"] {
+  --he-indigo: #1f2a44;
+  --he-ink: #1a1a1a;
+  --he-stone: #8a8a80;
+  --he-matcha: #6b8e5a;
+  --he-vermillion: #b23a2e;
+  --background: #f4f1ea;
+  --foreground: #1a1a1a;
+  --card: #fcfaf5f2;
+  --card-foreground: #1a1a1a;
+  --muted: #e5e3da;
+  --muted-foreground: #5f625a;
+  --border: #d3d2c8;
+  --secondary: #e0e5dc;
+  --secondary-foreground: #384630;
+  --ring: #1f2a44;
+  --accent-primary: #1f2a44;
+  --primary-foreground: #f4f1ea;
+  --accent-primary-soft: #e1e6e9;
+  --timer-running: #4c693e;
+  --timer-warning: #806020;
+  --timer-danger: #b23a2e;
+  --he-button: #1f2a44;
+  --he-button-hover: #303d53;
+  --he-button-ink: #f4f1ea;
+  --he-paper: #faf8f0d9;
+  --he-field-border: #858a7d;
+  --he-wash: #1f2a441c;
+  --he-pattern: #1f2a44;
+  --he-hover-bleed: #1f2a4412;
+  --he-backdrop: #1a1a1a4d;
+}
+
+:root.dark[data-accent="dark"] {
+  --background: #1a1d1c;
+  --foreground: #f4f1ea;
+  --card: #242825f2;
+  --card-foreground: #f4f1ea;
+  --muted: #303730;
+  --muted-foreground: #b5b8ab;
+  --border: #41483f;
+  --secondary: #323e31;
+  --secondary-foreground: #d6dfce;
+  --ring: #c2cbda;
+  --accent-primary: #c2cbda;
+  --primary-foreground: #1f2a44;
+  --accent-primary-soft: #303c49;
+  --timer-running: #a0bc8c;
+  --timer-warning: #d4b87b;
+  --timer-danger: #e59b8f;
+  --he-button: #d5dde9;
+  --he-button-hover: #bdcadb;
+  --he-button-ink: #1f2a44;
+  --he-paper: #222824e6;
+  --he-field-border: #777f72;
+  --he-wash: #40577638;
+  --he-pattern: #c2cbda;
+  --he-hover-bleed: #a0bc8c12;
+  --he-backdrop: #10161299;
+}
+
+/* The presentation hook owns this root class; timer calculations stay shared. */
+:root[data-accent="dark"].timer-running-he {
+  --background: #e9ece9;
+  --card: #f6f7f2f2;
+  --muted: #e0e6e2;
+  --border: #c7d0c9;
+}
+:root.dark[data-accent="dark"].timer-running-he {
+  --background: #1c242a;
+  --card: #242e34f2;
+  --muted: #303c40;
+  --border: #414f53;
+}
+
+.he-only { display: none; }
+:root[data-accent="dark"] .he-only { display: block; }
+
+:root[data-accent="dark"] body {
+  /* next/font defines its variables on body, so resolve the serif here. */
+  --he-heading: var(--font-shippori-mincho), "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
+  background-image: url("/themes/he/paper.svg");
+  transition: background-color 1400ms ease, color 400ms ease;
+}
+:root[data-accent="dark"] body::before,
+:root[data-accent="dark"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+:root[data-accent="dark"] body::before {
+  background: radial-gradient(ellipse at 90% 18%, var(--he-wash), transparent 65%),
+    radial-gradient(ellipse at 5% 75%, var(--he-wash), transparent 55%);
+  opacity: .2;
+  transition: opacity 1800ms ease;
+}
+
+/* A single decorative wave layer: exactly .03 at rest, at most .14 running.
+   The animation stays paused until an active He timer registers on the root. */
+:root[data-accent="dark"] body::after {
+  top: auto;
+  height: 10rem;
+  background: var(--he-pattern);
+  mask: url("/themes/he/seigaiha.svg") left bottom / 120px 60px repeat;
+  opacity: .03;
+  animation: he-wave-drift 48s linear infinite;
+  animation-play-state: paused;
+  transition: opacity 1800ms ease;
+}
+:root[data-accent="dark"].timer-running-he body::before { opacity: .85; }
+:root[data-accent="dark"].timer-running-he body::after {
+  opacity: .14;
+  animation-play-state: running;
+}
+@keyframes he-wave-drift {
+  from { mask-position: 0 100%; }
+  to { mask-position: 120px 100%; }
+}
+
+:root[data-accent="dark"] :is(h1, h2, h3, .font-handwriting) {
+  font-family: var(--he-heading);
+  font-weight: 500;
+  letter-spacing: .01em;
+  line-height: 1.4;
+}
+:root[data-accent="dark"] h1:not(.sr-only) { font-size: clamp(1.75rem, 4vw, 2.25rem); }
+:root[data-accent="dark"] h2.text-xl { font-size: 1.5rem; }
+:root[data-accent="dark"] h3.text-lg { font-size: 1.25rem; }
+:root[data-accent="dark"] ::selection { background: var(--secondary); color: var(--secondary-foreground); }
+:root[data-accent="dark"] .landing-shell { background: transparent; }
+:root[data-accent="dark"] .app-navbar {
+  background: color-mix(in srgb, var(--background) 92%, transparent);
+  border-color: var(--border);
+}
+:root[data-accent="dark"] .app-navbar > div { min-height: 4.5rem; }
+:root[data-accent="dark"] .app-navbar :is(a, button) { border-radius: .375rem; }
+:root[data-accent="dark"] .app-navbar .font-handwriting { font-size: 1.375rem; }
+
+:root[data-accent="dark"] .he-intro { max-width: 36rem; text-align: center; }
+:root[data-accent="dark"] .he-eyebrow {
+  color: var(--muted-foreground);
+  font-size: .625rem;
+  font-weight: 500;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
+:root[data-accent="dark"] .he-eyebrow::after {
+  content: "";
+  display: block;
+  width: 9rem;
+  height: 1.5rem;
+  margin: .75rem auto .25rem;
+  background: url("/themes/he/bamboo.svg") center / contain no-repeat;
+}
+:root[data-accent="dark"] .he-intro h2 {
+  font-size: clamp(2rem, 5.5vw, 3rem);
+  line-height: 1.4;
+}
+:root[data-accent="dark"] .he-intro p:last-child {
+  margin-top: .875rem;
+  color: var(--muted-foreground);
+  font-size: .875rem;
+  line-height: 1.8;
+}
+
+/* Small, alternating radii suggest chamfered paper without clipping focus rings. */
+:root[data-accent="dark"] :is([data-slot="card"], .daily-goal, .study-room-members, .empty-rooms) {
+  border-radius: .75rem .375rem .75rem .375rem;
+  background: var(--card);
+  box-shadow: none;
+}
+:root[data-accent="dark"] [data-slot="card-header"] { padding: 1.75rem 1.75rem 1.25rem; gap: .375rem; }
+:root[data-accent="dark"] :is([data-slot="card-content"], [data-slot="card-footer"]) { padding: 0 1.75rem 1.75rem; }
+:root[data-accent="dark"] .auth-fields > * + * { margin-top: 1.5rem; }
+:root[data-accent="dark"] :is(.style-choice, .theme-option) { border-radius: .5rem .25rem; }
+:root[data-accent="dark"] .style-choice { padding-inline: .5rem; }
+:root[data-accent="dark"] [data-slot="badge"] { border-radius: .25rem; }
+:root[data-accent="dark"] [data-slot="badge"][data-variant="success"] { background: color-mix(in srgb, var(--timer-running) 8%, var(--card)); }
+:root[data-accent="dark"] [data-slot="badge"][data-variant="warning"] { background: color-mix(in srgb, var(--timer-warning) 8%, var(--card)); }
+:root[data-accent="dark"] [data-slot="badge"][data-variant="destructive"] { background: color-mix(in srgb, var(--timer-danger) 8%, var(--card)); }
+
+:root[data-accent="dark"] :is([data-slot="button"], .primary-link) {
+  border-radius: .5rem .25rem;
+  letter-spacing: .025em;
+  box-shadow: none;
+  transition: background-color 350ms ease, border-color 350ms ease, box-shadow 500ms ease, color 350ms ease;
+}
+:root[data-accent="dark"] [data-slot="button"][data-variant="default"],
+:root[data-accent="dark"] .primary-link {
+  background: var(--he-button);
+  color: var(--he-button-ink);
+}
+:root[data-accent="dark"] [data-slot="button"][data-variant="default"]:hover,
+:root[data-accent="dark"] .primary-link:hover { background: var(--he-button-hover); }
+:root[data-accent="dark"] [data-slot="button"][data-variant="outline"] {
+  background: var(--he-paper);
+  border-color: var(--he-field-border);
+}
+:root[data-accent="dark"] [data-slot="button"][data-variant="outline"]:hover { background: var(--muted); }
+:root[data-accent="dark"] [data-slot="button"][data-variant="destructive"] {
+  background: var(--he-vermillion);
+  color: #fffaf1;
+}
+:root[data-accent="dark"] [data-slot="button"][data-variant="destructive"]:hover { background: #923329; }
+/* An inset wash gives hover a soft ink edge, without a glow or raised shadow. */
+@media (hover: hover) {
+  :root[data-accent="dark"] :is([data-slot="button"], .theme-option, .style-choice):not(:disabled):hover {
+    box-shadow: inset 0 0 14px 1px var(--he-hover-bleed);
+  }
+}
+
+:root[data-accent="dark"] :is([data-slot="input"], textarea, select) {
+  border-radius: .375rem;
+  border-color: var(--he-field-border);
+  background: var(--he-paper);
+  color: var(--foreground);
+}
+:root[data-accent="dark"] [data-slot="input"] { min-height: 2.875rem; padding-inline: 1rem; }
+:root[data-accent="dark"] :is([data-slot="input"], textarea, select):focus-visible { border-color: var(--ring); }
+:root[data-accent="dark"] [data-slot="dialog"] {
+  border-radius: .75rem .375rem;
+  background: var(--background);
+  box-shadow: 0 12px 40px #1016121a;
+}
+:root[data-accent="dark"] [data-slot="dialog"]::backdrop { background: var(--he-backdrop); backdrop-filter: blur(4px); }
+:root[data-accent="dark"] [data-slot="dialog-content"] { border-radius: .75rem .375rem; padding: 1.75rem; }
+:root[data-accent="dark"] [data-slot="dialog-content"] h2 { font-size: 1.5rem; }
+
+:root[data-accent="dark"] .dashboard-shell { padding-block: 3rem 4rem; }
+:root[data-accent="dark"] .dashboard-header { margin-bottom: 2.5rem; }
+:root[data-accent="dark"] .dashboard-note { margin-top: .875rem; color: var(--muted-foreground); font-size: .875rem; }
+:root[data-accent="dark"] .study-overview { padding-block: .75rem; margin-block: 3rem; }
+:root[data-accent="dark"] .study-overview dd { margin-top: .5rem; font-weight: 500; }
+:root[data-accent="dark"] .room-grid { gap: 1.5rem; }
+:root[data-accent="dark"] .daily-goal { padding: 1.25rem 1.5rem; }
+:root[data-accent="dark"] .daily-goal h2 { font-size: 1rem; }
+:root[data-accent="dark"] .daily-goal [role="progressbar"] > div { background: var(--timer-running); }
+:root[data-accent="dark"] :is(.text-orange-500, .text-amber-500) { color: var(--timer-warning); }
+:root[data-accent="dark"] :is(.bg-emerald-400, .bg-emerald-500) { background: var(--he-matcha); }
+:root[data-accent="dark"] .animate-ping { animation: none; }
+:root[data-accent="dark"] input[type="checkbox"] { accent-color: var(--timer-running); }
+
+:root[data-accent="dark"] .personal-timer { max-width: 46rem; gap: 1.5rem; }
+:root[data-accent="dark"] :is(.timer-panel, .room-timer-panel) {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--border);
+  border-radius: .875rem .375rem .875rem .375rem;
+  padding: 1.75rem 1.25rem 2rem;
+  background: var(--card);
+  box-shadow: none;
+  transition: background-color 1400ms ease, border-color 800ms ease;
+}
+:root[data-accent="dark"] :is(.timer-panel, .room-timer-panel)::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  z-index: -1;
+  height: 3.75rem;
+  border-radius: 0 0 .875rem .375rem;
+  background: var(--he-pattern);
+  mask: url("/themes/he/seigaiha.svg") center bottom / 120px 60px repeat-x;
+  opacity: .03;
+  pointer-events: none;
+}
+:root[data-accent="dark"] .timer-display { align-self: center; justify-self: center; }
+:root[data-accent="dark"] .timer-display::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  aspect-ratio: 1;
+  background: var(--foreground);
+  mask: url("/themes/he/enso.svg") center / contain no-repeat;
+  opacity: .1;
+  pointer-events: none;
+}
+:root[data-accent="dark"] .timer-face circle { stroke-width: 3; }
+:root[data-accent="dark"] .timer-track { stroke: var(--he-stone); opacity: .4; }
+:root[data-accent="dark"] .timer-display[data-state="ready"] { --timer-ink: var(--foreground); }
+:root[data-accent="dark"] .timer-display[data-state="ready"] .timer-progress { stroke: var(--he-matcha); }
+:root[data-accent="dark"] .timer-digits {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: clamp(2rem, 8vw, 3.375rem);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-weight: 500;
+  letter-spacing: -.055em;
+  transition: color 700ms ease, letter-spacing 1000ms ease;
+}
+:root[data-accent="dark"] .timer-status { font-size: .625rem; letter-spacing: .18em; margin-top: .875rem; }
+/* Headers are always Mincho; only active timer type changes from the idle sans.
+   Scope to the active display so a second paused timer stays in its idle style. */
+:root[data-accent="dark"].timer-running-he .timer-display[data-state="running"] :is(.timer-digits, .timer-status) {
+  font-family: var(--he-heading);
+  letter-spacing: .035em;
+}
+:root[data-accent="dark"].timer-running-he .timer-display[data-state="running"] .timer-status { letter-spacing: .23em; }
+:root[data-accent="dark"] .timer-modes { border: 1px solid var(--border); border-radius: .375rem; background: transparent; padding: .25rem; }
+:root[data-accent="dark"] .timer-modes [aria-pressed="true"] { background: var(--secondary); color: var(--secondary-foreground); box-shadow: none; }
+:root[data-accent="dark"] .timer-presets button { min-width: 2.5rem; border-radius: .25rem; border: 1px solid var(--border); padding-inline: .5rem; background: transparent; }
+:root[data-accent="dark"] .timer-presets button:hover { background: var(--muted); }
+:root[data-accent="dark"] .timer-presets button[aria-pressed="true"] { background: var(--accent-primary-soft); border-color: var(--accent-primary); color: var(--accent-primary); }
+:root[data-accent="dark"] .timer-actions [data-variant="default"] { padding-inline: 2.5rem; }
+
+@media (min-width: 720px) {
+  :root[data-accent="dark"] .timer-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, .9fr);
+    padding: 2rem 2rem 2.5rem;
+    gap: 2rem;
+  }
+}
+@media (max-width: 639px) {
+  :root[data-accent="dark"] .dashboard-shell { padding-block: 2rem 3rem; }
+  :root[data-accent="dark"] [data-slot="card-header"] { padding: 1.5rem 1.25rem 1rem; }
+  :root[data-accent="dark"] :is([data-slot="card-content"], [data-slot="card-footer"]) { padding: 0 1.25rem 1.5rem; }
+  :root[data-accent="dark"] [data-slot="dialog-content"] { padding: 1.5rem 1.25rem; }
+}
+
+/* Keep minimal mode's existing behavior without reintroducing slate/blue tokens. */
+:root[data-accent="dark"][data-minimal="true"] {
+  --accent-primary: #1f2a44;
+  --accent-primary-soft: #e1e6e9;
+}
+:root.dark[data-accent="dark"][data-minimal="true"] {
+  --accent-primary: #c2cbda;
+  --accent-primary-soft: #303c49;
+}
+:root[data-accent="dark"][data-minimal="true"] body::before,
+:root[data-accent="dark"][data-minimal="true"] body::after,
+:root[data-accent="dark"][data-minimal="true"] .he-only,
+:root[data-accent="dark"][data-minimal="true"] .timer-display::before,
+:root[data-accent="dark"][data-minimal="true"] :is(.timer-panel, .room-timer-panel)::after { display: none; }
+:root[data-accent="dark"][data-minimal="true"] body::after { animation: none; }
+:root[data-accent="dark"][data-minimal="true"] .dashboard-shell { padding-block: 1rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-accent="dark"] body::after { animation: none; }
+  :root[data-accent="dark"] body,
+  :root[data-accent="dark"] body::before,
+  :root[data-accent="dark"] body::after,
+  :root[data-accent="dark"] :is(.timer-panel, .room-timer-panel, .timer-digits, [data-slot="button"], .primary-link) { transition: none; }
+}

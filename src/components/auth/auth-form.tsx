@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { useAccent } from '@/components/providers/accent-provider'
 
 interface AuthFormProps {
   mode: 'login' | 'signup'
@@ -16,7 +17,7 @@ interface AuthFormProps {
 export function AuthForm({ mode }: AuthFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [genderPref, setGenderPref] = useState('neutral')
+  const { accent: genderPref, setAccent: setGenderPref } = useAccent()
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -50,7 +51,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit} aria-busy={loading} aria-describedby={error ? "auth-error" : undefined}>
-        <CardContent className="space-y-4">
+        <CardContent className="auth-fields space-y-4">
           {mode === 'signup' && (
             <div>
               <label htmlFor="username" className="text-sm font-medium mb-1.5 block">Username</label>
@@ -72,9 +73,9 @@ export function AuthForm({ mode }: AuthFormProps) {
               <legend className="text-sm font-medium mb-2">Choose your style</legend>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { value: 'pink', label: '✨ She', desc: 'Pink accent' },
-                  { value: 'dark', label: '🌑 He', desc: 'Dark accent' },
-                  { value: 'neutral', label: '🌈 Neutral', desc: 'Default accent' },
+                  { value: 'pink' as const, label: '🌸 She', desc: 'Sakura' },
+                  { value: 'dark' as const, label: '🌿 He', desc: 'Sumi-e' },
+                  { value: 'neutral' as const, label: '🌈 Neutral', desc: 'Default accent' },
                 ].map((opt) => (
                   <button
                     key={opt.value}
@@ -82,7 +83,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                     type="button"
                     onClick={() => setGenderPref(opt.value)}
                     className={cn(
-                      'flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all text-sm',
+                      'style-choice flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all text-sm',
                       genderPref === opt.value
                         ? 'border-accent-primary bg-accent-primary/10'
                         : 'border-border hover:border-muted-foreground'
