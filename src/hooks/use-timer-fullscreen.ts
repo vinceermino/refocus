@@ -17,6 +17,7 @@ export function useTimerFullscreen(status: 'running' | 'paused' | 'stopped', com
   const mounted = useRef(false)
   const starting = useRef(false)
   const requestId = useRef(0)
+  const requested = useRef(false)
   const [stored, setStored] = useStoredValue('fullscreenOnStart')
   const enabled = stored === 'true'
   const supported = useSyncExternalStore(noSubscription, supportsFullscreen, () => false)
@@ -24,6 +25,8 @@ export function useTimerFullscreen(status: 'running' | 'paused' | 'stopped', com
   const [announcement, setAnnouncement] = useState('')
 
   const exit = useCallback(async () => {
+    requested.current = false
+    requestId.current++
     const doc = document as FullscreenDocument
     if (!ref.current || currentElement() !== ref.current) return
     try {
@@ -44,6 +47,7 @@ export function useTimerFullscreen(status: 'running' | 'paused' | 'stopped', com
     events.forEach(event => document.addEventListener(event, change))
     return () => {
       mounted.current = false
+      requested.current = false
       // Cancel the most recent request, including one started after this effect.
       // eslint-disable-next-line react-hooks/exhaustive-deps
       requestId.current++
@@ -63,31 +67,39 @@ export function useTimerFullscreen(status: 'running' | 'paused' | 'stopped', com
     }
   }, [status, complete, fullscreen, keepOnPause, exit])
 
-  const requestOnStart = useCallback(() => {
-    starting.current = true
+  const enter = useCallback(() => {
+    requested.current = true
     const id = ++requestId.current
     const element = ref.current
-    if (!enabled || !element) return
-    const enter = element.requestFullscreen ?? element.webkitRequestFullscreen ?? element.msRequestFullscreen
-    if (!enter) { setAnnouncement('Fullscreen is unavailable in this browser. Your timer still works.'); return }
+    if (!element || currentElement() === element) return
+    const request = element.requestFullscreen ?? element.webkitRequestFullscreen ?? element.msRequestFullscreen
+    if (!request) { setAnnouncement('Fullscreen is unavailable in this browser. Your timer still works.'); return }
     try {
-      // Do not await a server action before this call: it needs the Start gesture.
-      void Promise.resolve(enter.call(element)).then(() => {
-        if (!mounted.current || id !== requestId.current) {
+      // Start and the switch both call this within a user gesture.
+      void Promise.resolve(request.call(element)).then(() => {
+        if (!mounted.current || !requested.current) {
           if (currentElement() === element) {
             const doc = document as FullscreenDocument
             return (doc.exitFullscreen ?? doc.webkitExitFullscreen ?? doc.msExitFullscreen)?.call(doc)
           }
         }
-      }).catch(() => { if (mounted.current) setAnnouncement('Fullscreen could not open. Your timer still works.') })
+      }).catch(() => { if (mounted.current && id === requestId.current) setAnnouncement('Fullscreen could not open. Your timer still works.') })
     } catch { setAnnouncement('Fullscreen could not open. Your timer still works.') }
-  }, [enabled])
+  }, [])
+
+  const requestOnStart = useCallback(() => {
+    starting.current = true
+    if (enabled) enter()
+  }, [enabled, enter])
 
   const cancelStart = useCallback(() => {
     starting.current = false
-    requestId.current++
     void exit()
   }, [exit])
-  const setEnabled = useCallback((value: boolean) => setStored(String(value)), [setStored])
+  const setEnabled = useCallback((value: boolean) => {
+    setStored(String(value))
+    if (!value) void exit()
+    else if (!complete && (status === 'running' || (status === 'paused' && keepOnPause) || starting.current)) enter()
+  }, [setStored, exit, enter, status, complete, keepOnPause])
   return { ref, enabled, setEnabled, supported, fullscreen, announcement, requestOnStart, cancelStart, exit }
 }

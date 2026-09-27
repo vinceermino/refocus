@@ -317,7 +317,7 @@ export function StudyRoom({ room: initialRoom, currentUser, role: initialRole, m
             onModeChange={handleModeChange}
             onDurationChange={handleDurationChange}
           />
-          {canManage && <FullscreenToggle enabled={enabled} onChange={setEnabled} supported={supported} />}
+          {canManage && <FullscreenToggle enabled={enabled} fullscreen={fullscreen} active={timerState.status !== 'stopped' || fullscreen} onChange={setEnabled} supported={supported} />}
         </div>
 
         {/* Sidebar */}

@@ -156,7 +156,7 @@ main:focus { outline: none; }
 :root[data-accent] [data-fullscreen="true"] .timer-display { width: min(78vw, 57dvh, 560px); max-width: none; flex-shrink: 0; }
 :root[data-accent] [data-fullscreen="true"] .timer-digits { font-family: var(--font-shippori-mincho), Georgia, serif; font-size: clamp(3rem, min(14vw, 10vh), 8rem); font-weight: 500; letter-spacing: -.03em; }
 :root[data-accent] [data-fullscreen="true"] :is(.timer-control-group, .timer-controls) { max-width: 32rem; }
-[data-fullscreen="true"] > .daily-goal, [data-fullscreen="true"] .fullscreen-preference,
+[data-fullscreen="true"] > .daily-goal,
 [data-fullscreen="true"] .timer-display .minimal-optional, [data-fullscreen="true"] .timer-daily-quota { display: none; }
 :root[data-accent] [data-fullscreen="true"]::after { display: none; }
 .fullscreen-decoration { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; contain: strict; }

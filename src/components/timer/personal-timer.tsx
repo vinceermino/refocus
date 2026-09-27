@@ -165,7 +165,7 @@ export function PersonalTimer() {
           onModeChange={handleModeChange}
           onDurationChange={handleDurationChange}
         />
-        <FullscreenToggle enabled={enabled} onChange={setEnabled} supported={supported} />
+        <FullscreenToggle enabled={enabled} fullscreen={fullscreen} active={timerState.status !== 'stopped' || fullscreen} onChange={setEnabled} supported={supported} />
         </div>
       </div>
 

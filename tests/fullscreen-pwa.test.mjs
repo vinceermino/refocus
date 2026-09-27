@@ -65,6 +65,47 @@ test('late fullscreen resolution after failed server start or unmount cannot str
   }
 })
 
+for (const prefix of [false, true]) test(`fullscreen switch can be reused while running or paused (${prefix ? 'vendor' : 'standard'})`, async () => {
+  const app = fullscreen({ prefix })
+  app.render().setEnabled(false)
+  app.render().requestOnStart()
+  assert.equal(app.entered(), 0)
+  for (const status of ['running', 'paused', 'running']) {
+    app.render(status).setEnabled(true)
+    assert.equal(app.doc[app.field], app.panel)
+    assert.equal(app.render(status).fullscreen, true)
+    app.render(status).setEnabled(false)
+    assert.equal(app.doc[app.field], null)
+    assert.equal(app.render(status).fullscreen, false)
+    assert.equal(app.stored(), 'false')
+  }
+  // Esc/Exit preserves the next-start preference, and the same switch can reenter.
+  app.render('running').setEnabled(true)
+  await app.render('running').exit()
+  assert.equal(app.render('running').fullscreen, false)
+  assert.equal(app.stored(), 'true')
+  app.render('running').setEnabled(true)
+  assert.equal(app.render('running').fullscreen, true)
+  app.render('stopped')
+  app.render().requestOnStart()
+  assert.equal(app.doc[app.field], app.panel, 'The saved setting applies to another session')
+  app.harness.unmount()
+  await flushPromises()
+})
+
+test('turning the switch off cancels pending entry, while the latest On wins a rapid Off/On', async () => {
+  for (const reenable of [false, true]) {
+    const app = fullscreen({ delayed: true })
+    app.render('running').setEnabled(true)
+    app.render('running').setEnabled(false)
+    if (reenable) app.render('running').setEnabled(true)
+    app.pending.resolve()
+    await flushPromises()
+    assert.equal(app.doc[app.field], reenable ? app.panel : null)
+    app.harness.unmount()
+  }
+})
+
 function updates() {
   const browser = browserEvents(), regEvents = browserEvents(), workerEvents = browserEvents()
   const activity = loadSource('src/lib/timer-activity.ts', {})
