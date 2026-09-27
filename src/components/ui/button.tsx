@@ -14,7 +14,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         data-slot="button"
         data-variant={variant}
         className={cn(
-          'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
+          'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
           {
             'bg-accent-primary text-primary-foreground hover:bg-accent-primary/90': variant === 'default',
             'bg-secondary text-secondary-foreground hover:bg-secondary/80': variant === 'secondary',

@@ -1,9 +1,13 @@
 @import "tailwindcss";
-/* Variant palettes remain scoped to their existing stored accent keys. */
-@import "./she-theme.css";
-@import "./he-theme.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+@font-face { font-family: "Refocus Cormorant"; src: url('/fonts/cormorant-medium.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Cormorant Fallback"; src: local('Arial'); ascent-override: 104.79%; descent-override: 32.55%; line-gap-override: 0%; size-adjust: 88.18%; }
+@font-face { font-family: "Refocus Mincho"; src: url('/fonts/shippori-medium.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Mincho Fallback"; src: local('Times New Roman'); ascent-override: 97.65%; descent-override: 24.24%; line-gap-override: 0%; size-adjust: 118.79%; }
+:root { --font-cormorant: "Refocus Cormorant", "Cormorant Fallback"; --font-shippori-mincho: "Refocus Mincho", "Mincho Fallback"; }
+.she-only, .he-only { display: none; }
 
 /* ===== CSS Custom Properties for Theming ===== */
 
@@ -56,6 +60,7 @@ body {
   color: var(--foreground);
   font-family: var(--font-inter), system-ui, sans-serif;
   min-height: 100vh;
+  overflow-x: clip;
 }
 
 /* Utility classes for theme variables */
@@ -77,7 +82,7 @@ body {
   --color-timer-danger: var(--timer-danger);
 
   --font-sans: var(--font-inter), system-ui, sans-serif;
-  --font-handwriting: var(--font-indie-flower), cursive;
+  --font-handwriting: var(--font-shippori-mincho), Georgia, serif;
 }
 
 /* Animations */
@@ -123,14 +128,49 @@ body {
 main:focus { outline: none; }
 
 /* Minimal mode changes presentation without hiding timer, note or room actions. */
-body, nav, main, article, section, .study-room-layout, .study-room-members {
-  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
-}
 
 :root[data-minimal="true"] {
   --accent-primary: #334155;
   --accent-primary-soft: #f1f5f9;
 }
+
+.progress-ring { position: absolute; inset: 6.25%; --ring-width: 3px; contain: layout paint; }
+.progress-ring-track, .progress-half, .progress-arc, .progress-cap-end { position: absolute; inset: 0; border-radius: 50%; }
+.progress-ring-track { border: var(--ring-width) solid var(--border); opacity: .4; }
+.progress-half-right { clip-path: inset(0 0 0 50%); }
+.progress-half-left { clip-path: inset(0 50% 0 0); }
+.progress-arc { border: var(--ring-width) solid var(--progress-color); clip-path: inset(0 50% 0 0); transition: transform 500ms ease; }
+.progress-half-left .progress-arc { clip-path: inset(0 0 0 50%); }
+.progress-cap { position: absolute; top: 0; left: 50%; width: var(--ring-width); height: var(--ring-width); border-radius: 50%; background: var(--progress-color); transform: translateX(-50%); }
+.progress-cap-end { transition: transform 500ms ease; }
+.timer-face { contain: layout paint; }
+.deferred-section { content-visibility: auto; contain-intrinsic-size: auto 400px; }
+.note-card { content-visibility: auto; contain-intrinsic-size: auto 180px; }
+
+:root[data-accent] :is(.timer-panel, .room-timer-panel)[data-fullscreen="true"] {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 100%; max-width: none; height: 100dvh; min-height: 100dvh; margin: 0;
+  padding: 4rem 1rem 2rem; gap: clamp(1rem, 3vh, 2rem); border: 0; border-radius: 0;
+  background: var(--background); color: var(--foreground); overflow: auto; isolation: isolate;
+}
+:root[data-accent] [data-fullscreen="true"] .timer-display { width: min(78vw, 57dvh, 560px); max-width: none; flex-shrink: 0; }
+:root[data-accent] [data-fullscreen="true"] .timer-digits { font-family: var(--font-shippori-mincho), Georgia, serif; font-size: clamp(3rem, min(14vw, 10vh), 8rem); font-weight: 500; letter-spacing: -.03em; }
+:root[data-accent] [data-fullscreen="true"] :is(.timer-control-group, .timer-controls) { max-width: 32rem; }
+[data-fullscreen="true"] > .daily-goal, [data-fullscreen="true"] .fullscreen-preference,
+[data-fullscreen="true"] .timer-display .minimal-optional, [data-fullscreen="true"] .timer-daily-quota { display: none; }
+:root[data-accent] [data-fullscreen="true"]::after { display: none; }
+.fullscreen-decoration { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; contain: strict; }
+.fullscreen-decoration i { position: absolute; left: 15%; top: 90%; width: .65rem; height: 1rem; border-radius: 80% 0 80% 40%; background: var(--accent-primary); opacity: 0; animation: timer-particle 14s linear infinite; animation-play-state: paused; }
+.fullscreen-decoration i:nth-child(2) { left: 35%; animation-delay: -4s; animation-duration: 18s; }
+.fullscreen-decoration i:nth-child(3) { left: 60%; animation-delay: -9s; }
+.fullscreen-decoration i:nth-child(4) { left: 80%; animation-delay: -6s; animation-duration: 20s; }
+.fullscreen-decoration i:nth-child(5) { left: 92%; animation-delay: -11s; }
+[data-timer-status="running"] .fullscreen-decoration i { animation-play-state: running; will-change: transform, opacity; }
+:root[data-accent="pink"] .fullscreen-decoration i { background: var(--sakura); }
+:root[data-accent="dark"] .fullscreen-decoration i { border-radius: 50%; width: .3rem; height: .8rem; }
+@keyframes timer-particle { 0% { transform: translate3d(0,0,0) rotate(0); opacity: 0; } 20% { opacity: .3; } 80% { opacity: .2; } 100% { transform: translate3d(4rem,-80vh,0) rotate(180deg); opacity: 0; } }
+[data-minimal="true"] .fullscreen-decoration { display: none; }
+@media (prefers-reduced-motion: reduce) { .fullscreen-decoration i { animation: none; will-change: auto !important; } }
 
 :root.dark[data-minimal="true"] {
   --accent-primary: #cbd5e1;

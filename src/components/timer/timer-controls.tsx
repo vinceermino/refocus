@@ -1,5 +1,7 @@
 'use client'
 
+import { memo } from 'react'
+
 import { useState } from 'react'
 import { Play, Pause, Square, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -62,7 +64,7 @@ export function TimerControls({
   }
 
   return (
-    <div className="flex w-full min-w-0 flex-col items-center gap-6">
+    <div className="timer-controls flex w-full min-w-0 flex-col items-center gap-6">
       {/* Mode toggle */}
       {!isActive && (
         <div role="group" aria-label="Timer mode" className="timer-modes flex max-w-full flex-wrap justify-center gap-1 rounded-lg bg-muted p-1">
@@ -130,7 +132,7 @@ export function TimerControls({
                 disabled={loading}
                 onClick={() => onDurationChange(preset.seconds)}
                 className={cn(
-                  'min-h-10 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50',
+                  'min-h-10 rounded-lg px-3 py-1.5 text-sm font-medium transition-opacity disabled:opacity-50',
                   duration === preset.seconds
                     ? 'bg-accent-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80'
@@ -205,3 +207,5 @@ export function TimerControls({
     </div>
   )
 }
+
+export const MemoTimerControls = memo(TimerControls)

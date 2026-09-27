@@ -24,7 +24,7 @@ export function useStoredValue(key: string) {
     try { return localStorage.getItem(key) } catch { return null }
   }, [key])
 
-  const value = useSyncExternalStore(subscribe, getSnapshot, () => null)
+  const value = useSyncExternalStore(subscribe, getSnapshot, () => undefined)
   const setValue = useCallback((next: string) => {
     try {
       localStorage.setItem(key, next)

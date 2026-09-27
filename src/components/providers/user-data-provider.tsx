@@ -1,8 +1,6 @@
 ﻿'use client'
 
 import {
-  createContext,
-  useContext,
   useState,
   useEffect,
   useCallback,
@@ -11,50 +9,8 @@ import {
 } from 'react'
 import type { StudyStats } from '@/actions/stats'
 import { createClient } from '@/lib/supabase/client'
-
-interface UserProfile {
-  id: string
-  username: string
-  genderPref: string
-  totalStudyTime: number
-}
-
-interface UserRoom {
-  id: string
-  name: string
-  code: string
-  _count: { members: number }
-  timers: Array<{ status: string; mode: string }>
-}
-
-interface UserDataSnapshot {
-  profile: UserProfile | null
-  rooms: UserRoom[]
-  stats: StudyStats | null
-}
-
-interface UserData extends UserDataSnapshot {
-  error: string | null
-  isLoading: boolean
-  isRefreshingStats: boolean
-  refreshAll: () => Promise<void>
-  refreshRooms: () => Promise<void>
-  refreshStats: () => Promise<void>
-  applyStats: (stats: StudyStats) => void
-}
-
-const emptyData: UserDataSnapshot = { profile: null, rooms: [], stats: null }
-
-const UserDataContext = createContext<UserData>({
-  ...emptyData,
-  error: null,
-  isLoading: true,
-  isRefreshingStats: false,
-  refreshAll: async () => {},
-  refreshRooms: async () => {},
-  refreshStats: async () => {},
-  applyStats: () => {},
-})
+import { UserDataContext, emptyData, type UserDataSnapshot } from './user-data-context'
+export { useUserData } from './user-data-context'
 
 export function UserDataProvider({ children, initialData }: { children: ReactNode; initialData?: UserDataSnapshot | null }) {
   const [data, setData] = useState<UserDataSnapshot>(initialData ?? emptyData)
@@ -189,8 +145,4 @@ export function UserDataProvider({ children, initialData }: { children: ReactNod
       {children}
     </UserDataContext.Provider>
   )
-}
-
-export function useUserData() {
-  return useContext(UserDataContext)
 }

@@ -29,7 +29,7 @@ export function ParticipantList({ participants, currentUserId }: ParticipantList
           <div
             key={p.id}
             className={cn(
-              'flex items-center gap-3 p-2 rounded-lg transition-colors animate-fade-in',
+              'flex items-center gap-3 p-2 rounded-lg transition-opacity animate-fade-in',
               p.id === currentUserId && 'bg-accent-primary/5'
             )}
           >

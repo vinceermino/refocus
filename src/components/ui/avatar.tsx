@@ -24,7 +24,9 @@ export function Avatar({ src, fallback, size = 'default', showOnline, className,
         )}
       >
         {src ? (
-          <img src={src} alt={fallback} className="h-full w-full object-cover" />
+          // Avatars can be external URLs; preserve that contract without a broad image-host allowlist.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={src} alt={fallback} width={size === 'sm' ? 32 : size === 'lg' ? 48 : 40} height={size === 'sm' ? 32 : size === 'lg' ? 48 : 40} loading="lazy" decoding="async" className="h-full w-full object-cover" />
         ) : (
           fallback.charAt(0).toUpperCase()
         )}

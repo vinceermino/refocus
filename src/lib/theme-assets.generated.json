@@ -1,0 +1,10 @@
+{
+  "she": {
+    "css": "/themes/she/theme.css?v=02f4251447a3",
+    "font": "/fonts/cormorant-medium.woff2"
+  },
+  "he": {
+    "css": "/themes/he/theme.css?v=0d0de5691296",
+    "font": "/fonts/shippori-medium.woff2"
+  }
+}

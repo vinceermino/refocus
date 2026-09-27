@@ -137,7 +137,7 @@ function DiscoverRooms() {
       <div className="mt-6 grid gap-4 sm:grid-cols-2">{rooms?.map(room => <article key={room.id} className="flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-card p-5">
         <h2 className="break-words text-lg font-semibold">{room.name}</h2>
         <p className="break-words text-sm text-muted-foreground">{room.description || 'A place to focus together.'}</p>
-        {room.tags.length > 0 && <div className="flex flex-wrap gap-2">{room.tags.map(tag => <button type="button" key={tag} className="min-h-8 rounded-full bg-muted px-3 py-1 text-xs transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary" onClick={() => updateDirectory(tag, 0)}>#{tag}</button>)}</div>}
+        {room.tags.length > 0 && <div className="flex flex-wrap gap-2">{room.tags.map(tag => <button type="button" key={tag} className="min-h-8 rounded-full bg-muted px-3 py-1 text-xs transition-opacity hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary" onClick={() => updateDirectory(tag, 0)}>#{tag}</button>)}</div>}
         <div className="mt-auto flex items-center justify-between gap-3 pt-1"><span title="Members active in this room within the last minute" className="flex items-center gap-1.5 text-xs text-muted-foreground"><Users aria-hidden="true" className="h-4 w-4" />{room._count.members} active</span>
           <Button disabled={pending} aria-label={`Join ${room.name}`} onClick={() => {
             setJoiningId(room.id)

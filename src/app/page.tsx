@@ -6,6 +6,7 @@ import { PersonalTimer } from '@/components/timer/personal-timer'
 import { MinimalModeToggle } from '@/components/layout/minimal-mode-toggle'
 import { MinimalModeText } from '@/components/layout/minimal-mode-text'
 import { StyleSelector } from '@/components/layout/style-selector'
+import { InstallButton } from '@/components/providers/pwa-provider'
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -19,17 +20,18 @@ export default async function HomePage() {
     <div className="landing-shell relative flex min-h-screen flex-col bg-background">
       {/* Nav */}
       <nav className="app-navbar border-b border-border/50 bg-background/50 backdrop-blur-md relative z-10">
-        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-4 min-h-16 flex flex-wrap gap-2 items-center justify-between py-2">
           <div className="flex items-center gap-2 text-accent-primary">
             <Heart className="h-5 w-5 fill-accent-primary" />
             <span className="font-handwriting font-bold text-2xl tracking-tight">Re-Focus</span>
           </div>
           <div className="flex items-center gap-3">
+            <InstallButton />
             <MinimalModeToggle />
             <StyleSelector />
             <Link
               href="/login"
-              className="text-sm font-medium text-muted-foreground hover:text-accent-primary transition-colors px-3 py-2"
+              className="text-sm font-medium text-muted-foreground hover:text-accent-primary transition-opacity px-3 py-2"
             >
               Log in
             </Link>
@@ -63,7 +65,7 @@ export default async function HomePage() {
           <div className="pt-4 flex justify-center">
             <Link
               href="/signup"
-              className="primary-link rounded-lg bg-accent-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-accent-primary/90"
+              className="primary-link rounded-lg bg-accent-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:bg-accent-primary/90"
             >
               <MinimalModeText short="Sign up">Get Started for Free</MinimalModeText>
             </Link>

@@ -1,5 +1,7 @@
 'use client'
 
+import { memo } from 'react'
+
 import { useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -15,7 +17,7 @@ export function NoteCard({ note, canEdit = false, onChange }: { note: StudyNote;
   const [deleting, setDeleting] = useState(false)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  return <article className="rounded-xl border border-border bg-card p-4 sm:p-5 space-y-3">
+  return <article className="note-card rounded-xl border border-border bg-card p-4 sm:p-5 space-y-3">
     <div className="flex flex-wrap items-center justify-between gap-3">
       <ProfileLink userId={note.author.id} username={note.author.username} avatar className="text-sm font-medium" />
       <span className="text-xs text-muted-foreground">{note.visibility === 'personal' ? 'Personal' : 'Shared with group'}</span>
@@ -49,3 +51,5 @@ export function NoteCard({ note, canEdit = false, onChange }: { note: StudyNote;
     {error && <p role="alert" className="text-sm text-timer-danger">{error}</p>}
   </article>
 }
+
+export const MemoNoteCard = memo(NoteCard)

@@ -18,10 +18,10 @@ export function RoomCard({ room }: RoomCardProps) {
 
   return (
     <Link href={`/room/${room.code}`} className="min-w-0 rounded-xl">
-      <Card className="group h-full cursor-pointer transition-colors hover:border-accent-primary/50">
+      <Card className="group h-full cursor-pointer transition-opacity hover:border-accent-primary/50">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-3">
-            <CardTitle className="min-w-0 break-words group-hover:text-accent-primary transition-colors">
+            <CardTitle className="min-w-0 break-words group-hover:text-accent-primary transition-opacity">
               {room.name}
             </CardTitle>
             {activeTimer && (

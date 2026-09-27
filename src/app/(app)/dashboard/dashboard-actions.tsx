@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { Plus, LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { CreateRoomDialog } from '@/components/room/create-room-dialog'
-import { JoinRoomDialog } from '@/components/room/join-room-dialog'
+import dynamic from 'next/dynamic'
+const CreateRoomDialog = dynamic(() => import('@/components/room/create-room-dialog').then(module => module.CreateRoomDialog))
+const JoinRoomDialog = dynamic(() => import('@/components/room/join-room-dialog').then(module => module.JoinRoomDialog))
 
 export function DashboardActions() {
   const [createOpen, setCreateOpen] = useState(false)
@@ -22,8 +23,8 @@ export function DashboardActions() {
           Create Room
         </Button>
       </div>
-      <CreateRoomDialog open={createOpen} onOpenChange={setCreateOpen} />
-      <JoinRoomDialog open={joinOpen} onOpenChange={setJoinOpen} />
+      {createOpen && <CreateRoomDialog open={createOpen} onOpenChange={setCreateOpen} />}
+      {joinOpen && <JoinRoomDialog open={joinOpen} onOpenChange={setJoinOpen} />}
     </>
   )
 }

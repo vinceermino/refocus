@@ -4,12 +4,12 @@ import { useCallback, useEffect, useState, useTransition, useRef } from 'react'
 import { toast } from 'sonner'
 import { Copy, ArrowLeft, Settings } from 'lucide-react'
 import Link from 'next/link'
-import { RoomSettingsModal } from '@/components/room/room-settings-modal'
+import dynamic from 'next/dynamic'
 import { TimerDisplay } from '@/components/timer/timer-display'
-import { TimerControls } from '@/components/timer/timer-controls'
-import { MemberList, type RoomParticipant } from '@/components/room/member-list'
+import { MemoTimerControls as TimerControls } from '@/components/timer/timer-controls'
+import { MemoMemberList as MemberList, type RoomParticipant } from '@/components/room/member-list'
 import { canManageRoom } from '@/lib/room-permissions'
-import { DailyGoal } from '@/components/timer/daily-goal'
+import { MemoDailyGoal as DailyGoal } from '@/components/timer/daily-goal'
 import { useUserData } from '@/components/providers/user-data-provider'
 import { useLocalTimer } from '@/hooks/use-local-timer'
 import { useRealtimeTimer } from '@/hooks/use-realtime-timer'
@@ -17,7 +17,12 @@ import { useAlarm } from '@/hooks/use-alarm'
 import { startTimer, pauseTimer, resumeTimer, stopTimer, getRemainingDailyTime } from '@/actions/timer'
 import { Button } from '@/components/ui/button'
 import { MAX_DAILY_SECONDS } from '@/lib/focus-goals'
-import { GroupNotes } from '@/components/notes/group-notes'
+import { MemoGroupNotes as GroupNotes } from '@/components/notes/group-notes'
+import { useTimerFullscreen } from '@/hooks/use-timer-fullscreen'
+import { FullscreenToggle } from '@/components/timer/fullscreen-toggle'
+import { FullscreenChrome } from '@/components/timer/fullscreen-chrome'
+
+const RoomSettingsModal = dynamic(() => import('@/components/room/room-settings-modal').then(module => module.RoomSettingsModal))
 
 interface StudyRoomProps {
   room: {
@@ -66,6 +71,8 @@ export function StudyRoom({ room: initialRoom, currentUser, role: initialRole, m
 
   // A viewer's personal budget must never prematurely stop a shared timer.
   const timerOutput = useLocalTimer(timerState, timerState.mode === 'stopwatch' ? timerState.duration || MAX_DAILY_SECONDS : undefined)
+  const { ref, fullscreen, enabled, setEnabled, supported, announcement, requestOnStart, cancelStart, exit } = useTimerFullscreen(timerState.status, timerOutput.isComplete)
+  const handleMembersChange = useCallback(() => { void refreshRoom() }, [refreshRoom])
 
   // Fetch daily remaining time on mount and after stop
   const refreshDailyTime = useCallback(async () => {
@@ -151,11 +158,13 @@ export function StudyRoom({ room: initialRoom, currentUser, role: initialRole, m
   }, [timerState.status, setTimerState])
 
   const handleStart = useCallback((duration: number, mode: 'countdown' | 'stopwatch' | 'rest') => {
+    requestOnStart()
     startTransition(async () => {
       try {
         stopAlarm()
         const result = await startTimer(room.id, duration, mode)
         if ('error' in result) {
+          cancelStart()
           toast.error(result.error as string)
           return
         }
@@ -174,9 +183,9 @@ export function StudyRoom({ room: initialRoom, currentUser, role: initialRole, m
             setDailyRemaining(result.dailyRemaining as number)
           }
         }
-      } catch { toast.error('Unable to update the timer. Please refresh and try again.') }
+      } catch { cancelStart(); toast.error('Unable to update the timer. Please refresh and try again.') }
     })
-  }, [room.id, broadcastTimerUpdate, stopAlarm])
+  }, [room.id, broadcastTimerUpdate, stopAlarm, requestOnStart, cancelStart])
 
   const handlePause = useCallback(() => {
     if (!timerState.id) return
@@ -268,7 +277,7 @@ export function StudyRoom({ room: initialRoom, currentUser, role: initialRole, m
             <button
               aria-label={`Copy room code ${room.code}`}
               onClick={copyCode}
-              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-opacity"
             >
               <span className="font-mono">{room.code}</span>
               <Copy className="h-3 w-3" />
@@ -280,8 +289,10 @@ export function StudyRoom({ room: initialRoom, currentUser, role: initialRole, m
       {/* Main content */}
       <div className="study-room-layout grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8">
         {/* Timer section */}
-        <div className="room-timer-panel flex flex-col items-center gap-8">
+        <div ref={ref} data-fullscreen={fullscreen} data-timer-status={timerState.status} className="room-timer-panel flex flex-col items-center gap-8">
+          <FullscreenChrome active={fullscreen} announcement={announcement} onExit={exit} />
           <TimerDisplay
+          endsAt={timerOutput.endsAt}
             displaySeconds={timerOutput.displaySeconds}
             progress={timerOutput.progress}
             isRunning={timerOutput.isRunning}
@@ -306,17 +317,18 @@ export function StudyRoom({ room: initialRoom, currentUser, role: initialRole, m
             onModeChange={handleModeChange}
             onDurationChange={handleDurationChange}
           />
+          {canManage && <FullscreenToggle enabled={enabled} onChange={setEnabled} supported={supported} />}
         </div>
 
         {/* Sidebar */}
         <div className="study-room-members border border-border rounded-xl p-4 bg-card h-fit">
-          <MemberList members={members} roomId={room.id} currentUserId={currentUser.id} role={role} onChange={() => { void refreshRoom() }} />
+          <MemberList members={members} roomId={room.id} currentUserId={currentUser.id} role={role} onChange={handleMembersChange} />
         </div>
       </div>
 
       <GroupNotes key={room.id} roomId={room.id} currentUserId={currentUser.id} />
 
-      {canManage && (
+      {canManage && isSettingsOpen && (
         <RoomSettingsModal
           key={`${room.name}-${room.isPublic}-${room.description}-${room.tags.join()}-${isSettingsOpen}`}
           room={room}

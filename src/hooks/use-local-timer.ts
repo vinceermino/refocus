@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useClock } from '@/hooks/use-clock'
 import { formatTime } from '@/lib/utils'
+import { registerTimerSession } from '@/lib/timer-activity'
 
 export interface TimerState {
   id: string | null
@@ -14,6 +15,7 @@ export interface TimerState {
 }
 
 interface TimerOutput {
+  endsAt: number | null
   displaySeconds: number // For countdown: remaining. For stopwatch: total elapsed.
   progress: number // 0 to 1 (for countdown: how much time passed; for stopwatch: always 0)
   isComplete: boolean
@@ -25,6 +27,8 @@ const MAX_DAILY_SECONDS = 8 * 60 * 60 // 8 hours
 
 export function useLocalTimer(state: TimerState, dailyRemaining?: number): TimerOutput {
   const now = useClock(state.status === 'running')
+  const active = state.status !== 'stopped'
+  useEffect(() => active ? registerTimerSession() : undefined, [active])
 
   let displaySeconds = 0
   if (state.status === 'stopped') {
@@ -88,6 +92,8 @@ export function useLocalTimer(state: TimerState, dailyRemaining?: number): Timer
   }
 
   return {
+    endsAt: state.status === 'running' && state.startedAt && state.mode !== 'stopwatch'
+      ? new Date(state.startedAt).getTime() + (state.duration - state.elapsed) * 1000 : null,
     displaySeconds,
     progress,
     isComplete: isComplete || dailyLimitReached,

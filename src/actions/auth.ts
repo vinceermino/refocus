@@ -15,8 +15,7 @@ export async function signUp(formData: FormData) {
   if (error) return { error: error.message }
   if (!data.user) return { error: 'Sign up failed' }
 
-  // Also get genderPref from formData
-  const genderPref = (formData.get('genderPref') as string) || 'neutral'
+  const genderPref = formData.get('genderPref') === 'pink' ? 'pink' : 'dark'
 
   await prisma.profile.create({
     data: {
@@ -46,4 +45,3 @@ export async function signOut() {
   await supabase.auth.signOut()
   redirect('/')
 }
-

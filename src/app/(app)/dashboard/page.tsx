@@ -1,5 +1,7 @@
 'use client'
 
+import { DashboardSkeleton } from '@/components/layout/page-skeletons'
+
 import { DataStatus } from '@/components/layout/data-status'
 import { RoomCard } from '@/components/room/room-card'
 import { DashboardActions } from './dashboard-actions'
@@ -80,7 +82,7 @@ export default function DashboardPage() {
               <Link href="/discover" className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-border px-4 text-sm font-medium hover:bg-muted">Discover rooms</Link>
             </div>
           ) : (
-            <div className="room-grid grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="deferred-section room-grid grid grid-cols-1 sm:grid-cols-2 gap-4">
               {rooms.map((room) => (
                 <RoomCard key={room.id} room={room} />
               ))}
@@ -88,39 +90,6 @@ export default function DashboardPage() {
           )}
         </div>
       </>}
-    </div>
-  )
-}
-
-function DashboardSkeleton() {
-  return (
-    <div role="status" aria-label="Loading dashboard" className="max-w-4xl mx-auto px-4 py-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
-        <div>
-          <div className="h-9 w-48 bg-muted rounded-lg animate-pulse" />
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="h-9 w-28 bg-muted rounded-lg animate-pulse" />
-          <div className="h-9 w-32 bg-muted rounded-lg animate-pulse" />
-        </div>
-      </div>
-
-      <div aria-hidden="true" className="mx-auto mb-12 w-full max-w-md space-y-6">
-        <div className="h-32 rounded-xl bg-muted animate-pulse" />
-        <div className="h-[560px] rounded-xl bg-muted animate-pulse" />
-      </div>
-      <div aria-hidden="true" className="minimal-optional mb-8 grid grid-cols-1 gap-6 border-y border-border py-4 sm:grid-cols-3">
-        {[1, 2, 3].map(i => <div key={i} className="space-y-2"><div className="h-4 w-28 rounded bg-muted animate-pulse" /><div className="h-8 w-20 rounded bg-muted animate-pulse" /></div>)}
-      </div>
-
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Your Rooms</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {[1, 2].map((i) => (
-            <div key={i} className="h-32 rounded-xl border border-border bg-card animate-pulse" />
-          ))}
-        </div>
-      </div>
     </div>
   )
 }

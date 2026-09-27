@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="petal" x1="13" y1="3" x2="19" y2="28" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffe0e8"/>
+      <stop offset=".55" stop-color="#ffb7c5"/>
+      <stop offset="1" stop-color="#d986a0"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#petal)" d="M6 28C4 21 5 12 11 6C14.5 2.5 20 2 23 4Q24 4.5 23 6L21 8L25 7Q26.5 6.5 27 8C29 12 26.5 17.5 23 21C18.5 25.5 12 28 6 28Z"/>
+</svg>

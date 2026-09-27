@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import { memo } from 'react'
+import { ProgressRing } from '@/components/timer/progress-ring'
 import { ArrowLeft, Clock, Flame, Target, BarChart3, Trophy, Zap } from 'lucide-react'
 import type { StudyStats } from '@/actions/stats'
 
@@ -96,9 +98,6 @@ function WeeklyChart({ data }: { data: StudyStats['weeklyData'] }) {
 // --- Daily Goal Ring ---
 function DailyGoalRing({ used, limit }: { used: number; limit: number }) {
   const progress = Math.min(1, used / limit)
-  const radius = 70
-  const circumference = 2 * Math.PI * radius
-  const strokeDashoffset = circumference * (1 - progress)
 
   const getColor = () => {
     if (progress >= 1) return 'var(--timer-running)'
@@ -114,20 +113,7 @@ function DailyGoalRing({ used, limit }: { used: number; limit: number }) {
       </div>
       <div className="flex items-center justify-center">
         <div className="relative">
-          <svg aria-hidden="true" width="180" height="180" viewBox="0 0 180 180" className="transform -rotate-90">
-            <circle
-              cx="90" cy="90" r={radius}
-              fill="none" stroke="var(--border)" strokeWidth="10" opacity={0.3}
-            />
-            <circle
-              cx="90" cy="90" r={radius}
-              fill="none" stroke={getColor()} strokeWidth="10"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              className="transition-all duration-1000 ease-out"
-            />
-          </svg>
+          <div className="relative h-[180px] w-[180px]"><ProgressRing progress={progress} color={getColor()} /></div>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-2xl font-bold">{Math.round(progress * 100)}%</span>
             <span className="text-xs text-muted-foreground">{formatDuration(used)}</span>
@@ -173,8 +159,8 @@ function RoomBreakdown({ rooms }: { rooms: StudyStats['roomBreakdown'] }) {
               </div>
               <div aria-hidden="true" className="h-2 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full transition-all duration-700 ease-out"
-                  style={{ width: `${percent}%`, backgroundColor: room.color }}
+                  className="h-full rounded-full transition-transform duration-700 ease-out"
+                  style={{ transform: `scaleX(${percent / 100})`, transformOrigin: 'left', backgroundColor: room.color }}
                 />
               </div>
             </div>
@@ -186,7 +172,7 @@ function RoomBreakdown({ rooms }: { rooms: StudyStats['roomBreakdown'] }) {
 }
 
 // --- Main Dashboard ---
-export function AnalyticsDashboard({ stats }: { stats: StudyStats }) {
+function AnalyticsDashboardView({ stats }: { stats: StudyStats }) {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Header */}
@@ -238,3 +224,5 @@ export function AnalyticsDashboard({ stats }: { stats: StudyStats }) {
     </div>
   )
 }
+
+export const AnalyticsDashboard = memo(AnalyticsDashboardView)

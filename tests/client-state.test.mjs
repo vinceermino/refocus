@@ -14,6 +14,7 @@ function userData(initialData = snapshot(), initialUserId = 'auth-first') {
   const requests = []
   let authCallback
   const { UserDataProvider } = loadSource('src/components/providers/user-data-provider.tsx', {
+    './user-data-context': loadSource('src/components/providers/user-data-context.ts', {}),
     react: harness.react,
     '@/lib/supabase/client': { createClient: () => ({ auth: { onAuthStateChange: callback => {
       authCallback = callback

@@ -11,7 +11,7 @@ export function Badge({ className, variant = 'default', ...props }: BadgeProps) 
       data-slot="badge"
       data-variant={variant}
       className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors',
+        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-opacity',
         {
           'bg-accent-primary/10 text-accent-primary': variant === 'default',
           'bg-secondary text-secondary-foreground': variant === 'secondary',

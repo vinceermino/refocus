@@ -71,11 +71,10 @@ export function AuthForm({ mode }: AuthFormProps) {
           {mode === 'signup' && (
             <fieldset>
               <legend className="text-sm font-medium mb-2">Choose your style</legend>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {[
                   { value: 'pink' as const, label: '🌸 She', desc: 'Sakura' },
                   { value: 'dark' as const, label: '🌿 He', desc: 'Sumi-e' },
-                  { value: 'neutral' as const, label: '🌈 Neutral', desc: 'Default accent' },
                 ].map((opt) => (
                   <button
                     key={opt.value}
@@ -83,7 +82,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                     type="button"
                     onClick={() => setGenderPref(opt.value)}
                     className={cn(
-                      'style-choice flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all text-sm',
+                      'style-choice flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-transform text-sm',
                       genderPref === opt.value
                         ? 'border-accent-primary bg-accent-primary/10'
                         : 'border-border hover:border-muted-foreground'

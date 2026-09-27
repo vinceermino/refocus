@@ -10,6 +10,7 @@ import { signOut } from '@/actions/auth'
 import { ProfileLink } from '@/components/profile/profile-link'
 import { MinimalModeToggle } from './minimal-mode-toggle'
 import { StyleSelector } from './style-selector'
+import { InstallButton } from '@/components/providers/pwa-provider'
 
 interface NavbarProps {
   username?: string
@@ -27,12 +28,12 @@ export function Navbar({ username, userId }: NavbarProps) {
         <div className="flex min-w-0 items-center gap-1 sm:gap-4">
           <Link href="/dashboard" aria-label="Re-Focus dashboard" aria-current={pathname === "/dashboard" ? "page" : undefined} className="group flex h-10 min-w-10 items-center justify-center gap-2 rounded-lg px-2 aria-[current=page]:bg-accent-primary/10">
             <Timer className="h-5 w-5 text-accent-primary" />
-            <span className="font-handwriting font-bold text-2xl tracking-tight hidden lg:inline-block group-hover:text-accent-primary transition-colors">
+            <span className="font-handwriting font-bold text-2xl tracking-tight hidden lg:inline-block group-hover:text-accent-primary transition-opacity">
               Re-Focus
             </span>
           </Link>
 
-          <Link href="/discover" title="Discover rooms" aria-label="Discover rooms" aria-current={pathname === '/discover' ? 'page' : undefined} className="flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-lg px-2 text-sm text-muted-foreground hover:text-accent-primary aria-[current=page]:bg-accent-primary/10 aria-[current=page]:text-accent-primary transition-colors">
+          <Link href="/discover" title="Discover rooms" aria-label="Discover rooms" aria-current={pathname === '/discover' ? 'page' : undefined} className="flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-lg px-2 text-sm text-muted-foreground hover:text-accent-primary aria-[current=page]:bg-accent-primary/10 aria-[current=page]:text-accent-primary transition-opacity">
             <Compass className="h-4 w-4" /><span className="minimal-optional hidden sm:inline">Discover</span>
           </Link>
           <Link
@@ -40,7 +41,7 @@ export function Navbar({ username, userId }: NavbarProps) {
             title="Analytics"
             aria-label="Analytics"
             aria-current={pathname === "/dashboard/analytics" ? "page" : undefined}
-            className="flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-lg px-2 text-sm text-muted-foreground hover:text-accent-primary aria-[current=page]:bg-accent-primary/10 aria-[current=page]:text-accent-primary transition-colors"
+            className="flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-lg px-2 text-sm text-muted-foreground hover:text-accent-primary aria-[current=page]:bg-accent-primary/10 aria-[current=page]:text-accent-primary transition-opacity"
           >
             <BarChart3 className="h-4 w-4" />
             <span className="minimal-optional hidden sm:inline">Analytics</span>
@@ -48,6 +49,7 @@ export function Navbar({ username, userId }: NavbarProps) {
         </div>
 
         <div className="flex items-center gap-0 sm:gap-1">
+          <InstallButton />
           <MinimalModeToggle />
           <StyleSelector />
 
@@ -60,8 +62,8 @@ export function Navbar({ username, userId }: NavbarProps) {
             aria-label={accent === 'pink' ? 'Toggle cream or blush paper' : 'Toggle light or dark theme'}
             className="relative"
           >
-            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <Sun className="h-4 w-4 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
           </Button>
 
           {/* User info */}

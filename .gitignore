@@ -12,6 +12,11 @@
 
 # testing
 /coverage
+/artifacts/
+
+# Generated for the current Next production build
+/public/sw.js
+/public/sw-lifecycle.js
 
 # next.js
 /.next/

@@ -6,8 +6,14 @@ License: https://github.com/google/fonts/blob/main/ofl/shipporimincho/OFL.txt
 
 Downloaded using the Google Fonts CSS API with the text parameter containing
 U+0020–U+024F, U+2013, U+2014, U+2018, U+2019, U+201C, U+201D and U+2026.
-The API provided the subset directly; the font was not modified locally.
+The API provided the TTF subset directly; the WOFF2 copy below preserves it.
 Other scripts use the system Mincho/serif fallback. Body text remains Inter.
 
-Bundled via next/font/local to avoid a build-time network dependency. Preloading
-is disabled because only the He style uses this font.
+The original TTF is retained as the source. The losslessly compressed WOFF2
+copy is served locally, preloaded for He and fetched on demand for She
+fullscreen. `scripts/prepare-theme-assets.mjs` copies it into `public/fonts`.
+
+Conversion: FontTools 4.66.0 (`fonttools[woff]`),
+`fonttools ttLib.woff2 compress medium-latin.ttf`.
+The character map, glyph order, advance widths and glyph outlines match the
+original TTF. The existing subset and license are unchanged.

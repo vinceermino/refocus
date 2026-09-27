@@ -2,13 +2,16 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { TimerDisplay } from '@/components/timer/timer-display'
-import { TimerControls } from '@/components/timer/timer-controls'
+import { MemoTimerControls as TimerControls } from '@/components/timer/timer-controls'
 import { logPersonalSession } from '@/actions/timer'
-import { useUserData } from '@/components/providers/user-data-provider'
+import { useUserData } from '@/components/providers/user-data-context'
 import { useLocalTimer, type TimerState } from '@/hooks/use-local-timer'
 import { useAlarm } from '@/hooks/use-alarm'
 import { toast } from 'sonner'
-import { DailyGoal } from '@/components/timer/daily-goal'
+import { MemoDailyGoal as DailyGoal } from '@/components/timer/daily-goal'
+import { useTimerFullscreen } from '@/hooks/use-timer-fullscreen'
+import { FullscreenToggle } from '@/components/timer/fullscreen-toggle'
+import { FullscreenChrome } from '@/components/timer/fullscreen-chrome'
 
 export function PersonalTimer() {
   const { playAlarm, stopAlarm } = useAlarm()
@@ -24,6 +27,7 @@ export function PersonalTimer() {
   })
 
   const timerOutput = useLocalTimer(timerState)
+  const { ref, fullscreen, enabled, setEnabled, supported, announcement, requestOnStart, exit } = useTimerFullscreen(timerState.status, timerOutput.isComplete)
 
   // Play alarm when timer completes
   useEffect(() => {
@@ -72,6 +76,7 @@ export function PersonalTimer() {
   }, [timerState.status])
 
   const handleStart = useCallback((duration: number, mode: 'countdown' | 'stopwatch' | 'rest') => {
+    requestOnStart()
     stopAlarm()
     setTimerState({
       id: null,
@@ -81,7 +86,7 @@ export function PersonalTimer() {
       startedAt: new Date().toISOString(),
       elapsed: 0,
     })
-  }, [stopAlarm])
+  }, [stopAlarm, requestOnStart])
 
   const handlePause = useCallback(() => {
     setTimerState(prev => {
@@ -134,8 +139,10 @@ export function PersonalTimer() {
       {profile && <DailyGoal />}
 
       {/* Timer Section */}
-      <div className="timer-panel flex w-full flex-col items-center gap-6 rounded-xl border border-border bg-card p-4 sm:p-6">
+      <div ref={ref} data-fullscreen={fullscreen} data-timer-status={timerState.status} className="timer-panel flex w-full flex-col items-center gap-6 rounded-xl border border-border bg-card p-4 sm:p-6">
+        <FullscreenChrome active={fullscreen} announcement={announcement} onExit={exit} />
         <TimerDisplay
+          endsAt={timerOutput.endsAt}
           displaySeconds={timerOutput.displaySeconds}
           progress={timerOutput.progress}
           isRunning={timerOutput.isRunning}
@@ -144,6 +151,7 @@ export function PersonalTimer() {
           mode={timerState.mode}
         />
 
+        <div className="timer-control-group flex w-full flex-col items-center gap-3">
         <TimerControls
           isRunning={timerOutput.isRunning}
           isPaused={timerOutput.isPaused}
@@ -157,6 +165,8 @@ export function PersonalTimer() {
           onModeChange={handleModeChange}
           onDurationChange={handleDurationChange}
         />
+        <FullscreenToggle enabled={enabled} onChange={setEnabled} supported={supported} />
+        </div>
       </div>
 
     </div>

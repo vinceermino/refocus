@@ -33,6 +33,11 @@ export function createHookHarness() {
       if (!sameDependencies(hooks[index]?.dependencies, dependencies)) hooks[index] = { callback, dependencies }
       return hooks[index].callback
     },
+    useMemo(factory, dependencies) {
+      const index = cursor++
+      if (!sameDependencies(hooks[index]?.dependencies, dependencies)) hooks[index] = { value: factory(), dependencies }
+      return hooks[index].value
+    },
     useEffect(effect, dependencies) {
       const index = cursor++
       if (!sameDependencies(hooks[index]?.dependencies, dependencies)) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 /**
  * Hook that generates alarm tones using the Web Audio API.
@@ -84,5 +84,6 @@ export function useAlarm() {
     }
   }, [])
 
+  useEffect(() => stopAlarm, [stopAlarm])
   return { playAlarm, stopAlarm }
 }

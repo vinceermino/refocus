@@ -1,5 +1,7 @@
 'use client'
 
+import { memo } from 'react'
+
 import { useState, useTransition } from 'react'
 import { Crown, Shield, MoreHorizontal } from 'lucide-react'
 import { manageRoomMember } from '@/actions/rooms'
@@ -16,7 +18,7 @@ export function MemberList({ members, roomId, currentUserId, role, onChange }: {
   const [selected, setSelected] = useState<string | null>(null)
   const [confirm, setConfirm] = useState<MemberAction | null>(null)
   const [pending, startTransition] = useTransition()
-  const now = useClock(true)
+  const now = useClock(true, 10_000)
   const isOnline = (member: RoomParticipant) => member.status === 'active' && now > 0 && !!member.lastSeenAt && new Date(member.lastSeenAt).getTime() >= now - 60_000
   const target = members.find(m => m.id === selected)
   const actions: { action: MemberAction; label: string }[] = target?.status === 'pending'
@@ -45,3 +47,5 @@ export function MemberList({ members, roomId, currentUserId, role, onChange }: {
     </DialogContent></Dialog>
   </div>
 }
+
+export const MemoMemberList = memo(MemberList)

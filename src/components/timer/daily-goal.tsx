@@ -1,8 +1,10 @@
 'use client'
 
+import { memo } from 'react'
+
 import { useState, useTransition } from 'react'
 import { Pencil, Flame } from 'lucide-react'
-import { useUserData } from '@/components/providers/user-data-provider'
+import { useUserData } from '@/components/providers/user-data-context'
 import { setDailyGoal } from '@/actions/stats'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -25,7 +27,7 @@ export function DailyGoal() {
     </div>
     <div className="my-2 flex justify-between text-xs text-muted-foreground"><span>{formatTime(stats.todaySeconds)} / {formatTime(stats.goalMinutes * 60)}</span><span>{Math.round(percent)}%</span></div>
     <div role="progressbar" aria-label="Daily focus progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(percent)} className="h-2 overflow-hidden rounded-full bg-muted">
-      <div className="h-full bg-accent-primary transition-all" style={{ width: `${percent}%` }} />
+      <div className="h-full bg-accent-primary transition-transform" style={{ transform: `scaleX(${percent / 100})`, transformOrigin: 'left' }} />
     </div>
     <div className="mt-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
       <span title="Consecutive days meeting your focus goal" tabIndex={0} className="flex items-center gap-1"><Flame className="h-4 w-4 text-orange-500" />{stats.currentStreak} {stats.currentStreak === 1 ? 'Day' : 'Days'}</span>
@@ -52,3 +54,5 @@ export function DailyGoal() {
     </DialogContent></Dialog>
   </section>
 }
+
+export const MemoDailyGoal = memo(DailyGoal)

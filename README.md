@@ -61,7 +61,7 @@ Do not run the baseline's CREATE statements against existing tables, or mark the
 
 `npm test` includes goal/streak boundary cases, server authorization and room/timer regressions, and both fresh/upgrade migration checks against temporary PGlite PostgreSQL instances. No hosted database or authentication credentials are used by these tests. Live multi-user browser behavior still needs a smoke test after migration deployment.
 
-See [UX-AUDIT.md](UX-AUDIT.md) for the prioritized audit, implemented changes and verification limits. Before editing Next.js code, follow `AGENTS.md` and consult the installed guides in `node_modules/next/dist/docs/`.
+See [UX-AUDIT.md](UX-AUDIT.md) for the prioritized audit, implemented changes and verification limits. See [PERFORMANCE-PWA.md](PERFORMANCE-PWA.md) for the performance pass, PWA/fullscreen behavior, build commands, measurements and remaining performance budgets. Before editing Next.js code, follow `AGENTS.md` and consult the installed guides in `node_modules/next/dist/docs/`.
 
 ## Study notes, profiles and minimal mode
 

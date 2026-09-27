@@ -1,5 +1,7 @@
 'use client'
 
+import { memo } from 'react'
+
 import { toast } from 'sonner'
 import { useApiResource } from '@/hooks/use-api-resource'
 import { requestJson } from '@/lib/client-api'
@@ -7,13 +9,13 @@ import { GROUP_NOTE_LIMIT } from '@/lib/note-validation'
 import type { StudyNote } from '@/lib/note-types'
 import { Button } from '@/components/ui/button'
 import { NoteEditor } from './note-editor'
-import { NoteCard } from './note-card'
+import { MemoNoteCard as NoteCard } from './note-card'
 import { MinimalModeText } from '@/components/layout/minimal-mode-text'
 
 export function GroupNotes({ roomId, currentUserId }: { roomId: string; currentUserId: string }) {
   const url = `/api/group-study/${roomId}/notes`
   const { data, error, isLoading, refresh } = useApiResource<{ notes: StudyNote[] }>(url)
-  return <section aria-labelledby="group-notes-heading" className="mt-12 space-y-6">
+  return <section aria-labelledby="group-notes-heading" className="deferred-section mt-12 space-y-6">
     <div className="flex items-center justify-between gap-3">
       <div><h2 id="group-notes-heading" className="text-xl font-semibold">Notes</h2><p className="minimal-optional mt-1 text-sm text-muted-foreground">Capture a thought for yourself or your study group.</p></div>
       <Button variant="outline" disabled={isLoading} onClick={() => { void refresh() }}>Refresh</Button>
@@ -33,3 +35,5 @@ export function GroupNotes({ roomId, currentUserId }: { roomId: string; currentU
     </div>}
   </section>
 }
+
+export const MemoGroupNotes = memo(GroupNotes)

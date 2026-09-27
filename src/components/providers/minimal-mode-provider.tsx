@@ -8,7 +8,7 @@ const MinimalModeContext = createContext({ minimal: false, toggle: () => {} })
 export function MinimalModeProvider({ children }: { children: ReactNode }) {
   const [stored, setStored] = useStoredValue('refocus-minimal-mode')
   const minimal = stored === 'true'
-  useEffect(() => { document.documentElement.dataset.minimal = String(minimal) }, [minimal])
+  useEffect(() => { if (stored !== undefined) document.documentElement.dataset.minimal = String(minimal) }, [minimal, stored])
   return <MinimalModeContext.Provider value={{ minimal, toggle: () => setStored(String(!minimal)) }}>{children}</MinimalModeContext.Provider>
 }
 

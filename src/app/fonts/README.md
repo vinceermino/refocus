@@ -7,5 +7,11 @@ https://fonts.gstatic.com/s/cormorantgaramond/v21/co3umX5slCNuHLi8bLeY9MK7whWMhy
 License source:
 https://github.com/google/fonts/blob/main/ofl/cormorantgaramond/OFL.txt
 
-Bundled through next/font/local so the She theme builds without an additional
-Google Fonts request. Preloading is disabled because other styles do not use it.
+The original TTF is retained as the source. Its WOFF2 copy is served locally,
+with a font preload only when She is selected. No runtime font-origin request
+is needed. `scripts/prepare-theme-assets.mjs` copies it into `public/fonts`.
+
+Lossless WOFF2 conversion used FontTools 4.66.0 (`fonttools[woff]`):
+`fonttools ttLib.woff2 compress cormorant-garamond-medium.ttf`.
+The character map, glyph order, advance widths and glyph outlines were verified
+against the original TTF. Original font licensing remains in OFL.txt.
